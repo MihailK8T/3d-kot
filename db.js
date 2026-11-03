@@ -34,7 +34,12 @@
       .then(function (r) { if (!r.ok) { throw new Error("rpc " + fn + " -> " + r.status); } return r.json(); });
   }
   function list(table, qs) { return req("GET", table, undefined, qs); }
-  function insert(table, row) { return req("POST", table, row, "select=*"); }
+  function insert(table, row) {
+    // return=minimal avoids needing SELECT permission on the response row.
+    var hdrs = Object.assign({}, headers, { "Prefer": "return=minimal" });
+    return fetch(api + table, { method: "POST", headers: hdrs, body: JSON.stringify(row) })
+      .then(function (r) { if (!r.ok) { throw new Error("POST " + table + " -> " + r.status); } return r.text(); });
+  }
   function update(table, id, patch) { return req("PATCH", table, patch, "id=eq." + id); }
   function del(table, id) { return req("DELETE", table, undefined, "id=eq." + id); }
 
