@@ -149,7 +149,10 @@
     function sendToDb(){
       var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
       if(useDb){
-        var rec={user_name:name,name:name,email:email,phone:phone||'',material:material,qty:+qty||1,description:desc,status:'processing'};
+        var sessionName=null;
+        try{ sessionName = storage.getItem('3dprint_session') || null; }catch(e){}
+        var accName = sessionName ? sessionName : name;
+        var rec={user_name:accName,name:name,email:email,phone:phone||'',material:material,qty:+qty||1,description:desc,status:'processing'};
         window.DB.orders.add(rec).then(function(){
           document.getElementById('orderForm').reset();
           document.getElementById('filePicked').textContent='';

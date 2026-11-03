@@ -85,6 +85,8 @@
   var USERS=storage?loadUsers():[];
 
   function go(){ location.href='3d-print-site.html'; }
+  var ME_KEY='3dprint_me';
+  function saveMe(u){ try{ localStorage.setItem(ME_KEY, JSON.stringify(u)); }catch(e){} }
 
   // if already logged in
   if(storage && storage.getItem(SESSION_KEY)){
@@ -117,7 +119,7 @@
     if(useDb){
       if(!window.DB.users.register){ msg.textContent='Ошибка инициализации.';msg.className='msg error';return; }
       window.DB.users.register(name, email, pass).then(function(r){
-        if(r && r.ok){ finishOk(); }
+        if(r && r.ok){ saveMe({ name: r.name, email: r.email, pass: pass }); finishOk(); }
         else { msg.textContent=(r && r.error)?r.error:'Ошибка регистрации.';msg.className='msg error'; }
       }).catch(function(){ msg.textContent='Ошибка регистрации. Попробуйте позже.';msg.className='msg error'; });
       return;
@@ -144,7 +146,7 @@
     }
     if(useDb){
       window.DB.users.login(name, pass).then(function(r){
-        if(r && r.ok){ ok({ name: r.name }); }
+        if(r && r.ok){ saveMe({ name: r.name, email: r.email, pass: pass }); ok({ name: r.name }); }
         else { msg.textContent=(r && r.error)?r.error:'Неверное имя или пароль.';msg.className='msg error'; }
       }).catch(function(){ msg.textContent='Ошибка входа.';msg.className='msg error'; });
       return;

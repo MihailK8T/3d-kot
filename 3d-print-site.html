@@ -803,6 +803,7 @@
   var USERS_KEY = '3dprint_users';
   var ORDERS_KEY = '3dprint_orders';
   var SESSION_KEY = '3dprint_session';
+  var ME_KEY = '3dprint_me';
   var CONTENT_KEY = '3dprint_content';
   var STATS_KEY = '3dprint_stats';
   var PAUSE_KEY = '3dprint_pause';
@@ -831,6 +832,12 @@
     if(!storage) return null;
     var name = storage.getItem(SESSION_KEY);
     if(!name) return null;
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+    if(useDb){
+      // profile saved locally at login/register
+      var me = loadJSON(ME_KEY, null);
+      return me && me.name === name ? me : { name: name };
+    }
     for(var i=0;i<users.length;i++){ if(users[i].name === name) return users[i]; }
     return null;
   }
@@ -892,9 +899,8 @@
     var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
     if(useDb){
       list.innerHTML = '<li class="acct-empty">Загрузка…</li>';
-      window.DB.orders.all().then(function(all){
-        var mine = all.filter(function(o){ return o.user_name === me.name; }).slice().reverse();
-        drawMyOrders(list, mine);
+      window.DB.orders.byUser(me.name).then(function(mine){
+        drawMyOrders(list, (mine||[]).slice().reverse());
       }).catch(function(){ list.innerHTML='<li class="acct-empty">Ошибка загрузки заявок.</li>'; });
       return;
     }
@@ -964,7 +970,7 @@
     updateChatButton();
   }
   document.getElementById('logoutBtn').addEventListener('click', function(){
-    if(storage) storage.removeItem(SESSION_KEY);
+    if(storage){ storage.removeItem(SESSION_KEY); storage.removeItem(ME_KEY); }
     renderAuthState();
     toast('Вы вышли из аккаунта');
   });

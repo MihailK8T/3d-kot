@@ -60,6 +60,7 @@
     /* ORDERS */
     orders: {
       all: function () { return rpc("admin_list_orders", { p_secret: secret() }); },
+      byUser: function (name) { return rpc("user_my_orders", { p_name: name }).catch(function(){ return []; }); },
       add: function (o) { return insert("orders", o); },
       setStatus: function (id, status, reason) { return rpc("admin_update_order", { p_id: id, p_status: status, p_reason: (reason||null), p_secret: secret() }); },
       remove: function (id) { return rpc("admin_delete_order", { p_id: id, p_secret: secret() }); }
