@@ -50,8 +50,9 @@
   }
 
   /* ---- high-level API used by pages ---- */
-  // Admin secret: set by the ADMIN page only (window.ADMIN_SECRET). Public site leaves it unset.
-  function secret(){ return (typeof window.ADMIN_SECRET === 'string') ? window.ADMIN_SECRET : ''; }
+  // Admin secret is returned by admin_login and stored in localStorage; NOT in committed code.
+  function storedSecret(){ try { return localStorage.getItem('3dprint_admin_secret') || ''; } catch(e){ return ''; } }
+  function secret(){ return (typeof window.ADMIN_SECRET === 'string' && window.ADMIN_SECRET) ? window.ADMIN_SECRET : storedSecret(); }
 
   var DB = {
     /* USERS (bcrypt via RPC — no direct table access) */
@@ -102,6 +103,16 @@
         });
       },
       set: function (data) { return rpc("admin_set_content", { p_data: data, p_secret: secret() }); }
+    },
+    /* ADMIN: login (returns secret on success) + staff management */
+    admin: {
+      login: function (name, pass) { return rpc("admin_login", { p_name: name, p_pass: pass }); },
+      setSecret: function (s) { try { if(s) localStorage.setItem('3dprint_admin_secret', s); } catch(e){} },
+      clearSecret: function () { try { localStorage.removeItem('3dprint_admin_secret'); } catch(e){} },
+      staffList: function () { return rpc("admin_list_staff", { p_secret: secret() }); },
+      createStaff: function (name, pass, role) { return rpc("admin_create_staff", { p_name:name, p_pass:pass, p_role:role, p_secret: secret() }); },
+      deleteStaff: function (name) { return rpc("admin_delete_staff", { p_name: name, p_secret: secret() }); },
+      changeOwnerPass: function (pass) { return rpc("admin_change_owner_pass", { p_pass: pass, p_secret: secret() }); }
     },
     isConfigured: function () {
       return SUPABASE_URL.indexOf("YOUR_") !== 0;

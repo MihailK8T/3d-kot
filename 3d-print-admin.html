@@ -337,22 +337,9 @@ applyTheme(saved||(pd?'dark':'light'));
   function saveJSON(k,v){if(storage){try{storage.setItem(k,JSON.stringify(v));}catch(e){}}}
   function toast(t){var el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove('show');},2200);}
 
-  /* Staff default seed: 3 accounts */
-  var staff=loadJSON(STAFF_KEY,null);
-  if(!staff){
-    var ownerPass=null; try{ownerPass=storage.getItem(OWNER_PASS);}catch(e){}
-    staff=[
-      {name:'3d-kot', pass: ownerPass||'rekonekt', role:'owner'},
-      {name:'Admin', pass:'rekadmin', role:'admin'},
-      {name:'Moder', pass:'rekmodr', role:'moderator'}
-    ];
-    saveJSON(STAFF_KEY,staff);
-  } else {
-    // ensure owner exists with correct default
-    var hasOwner=false;
-    staff.forEach(function(s){ if(s.role==='owner') hasOwner=true; });
-    if(!hasOwner){ staff.push({name:'3d-kot',pass:'rekonekt',role:'owner'}); saveJSON(STAFF_KEY,staff); }
-  }
+  /* Staff: accounts live in the DB (server-checked). Fallback list kept empty;
+     no passwords are embedded in public code. */
+  var staff=loadJSON(STAFF_KEY,[]);
 
   var STATUS_LABELS={'processing':'В обработке','accepted':'Принят, ожидает правок','delivering':'Доставляется','rejected':'Отказ'};
   var STATUS_KEYS=['processing','accepted','delivering','rejected'];
@@ -434,28 +421,58 @@ applyTheme(saved||(pd?'dark':'light'));
   });
   function currentSession(){
     if(!session) return null;
+    if(typeof session === 'object' && session.name) return session;
+    // legacy: session is a name string
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+    if(useDb){
+      // role not known locally; treat as owner-capable only if stored secret works (minimize)
+      return { name: session, role: 'owner' };
+    }
     for(var i=0;i<staff.length;i++){ if(staff[i].name===session) return staff[i]; }
     return null;
   }
   function roleCan(role){ return role==='owner'||role==='admin'||role==='moderator'; }
 
-  /* Login */
+  /* Login - via server (Securily: password checked in Supabase, no secrets in code) */
   document.getElementById('loginForm').addEventListener('submit',function(e){
     e.preventDefault();
     var name=document.getElementById('ad-name').value.trim();
     var pass=document.getElementById('ad-pass').value;
+    var btn=document.querySelector('#loginForm .btn-primary');
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+    var finish=function(found){
+      if(found){
+        session=found;   // object {name, role}
+        document.getElementById('whoami').textContent=found.name+' · '+(ROLE_LABELS[found.role]||found.role);
+        enterAdmin();
+        document.getElementById('loginErr').textContent='';
+        document.getElementById('ad-name').value=''; document.getElementById('ad-pass').value='';
+        toast('Добро пожаловать, '+found.name);
+      } else {
+        document.getElementById('loginErr').textContent='Неверное имя или пароль.';
+      }
+    };
+    if(useDb){
+      if(btn){ btn.disabled=true; btn.textContent='Проверка…'; }
+      window.DB.admin.login(name, pass).then(function(r){
+        if(btn){ btn.disabled=false; btn.textContent='Войти'; }
+        if(r && r.ok){
+          // secret returned by the DB only on successful login
+          window.DB.admin.setSecret(r.secret);
+          finish({name:r.name, role:r.role});
+        } else {
+          document.getElementById('loginErr').textContent=(r&&r.error)?r.error:'Неверное имя или пароль.';
+        }
+      }).catch(function(){
+        if(btn){ btn.disabled=false; btn.textContent='Войти'; }
+        document.getElementById('loginErr').textContent='Ошибка проверки. Попробуйте позже.';
+      });
+      return;
+    }
+    // fallback (no DB): local staff list
     var found=null;
     staff.forEach(function(s){ if(s.name===name && s.pass===pass) found=s; });
-    if(found){
-      session=found.name;
-      document.getElementById('whoami').textContent=found.name+' · '+ROLE_LABELS[found.role];
-      enterAdmin();
-      document.getElementById('loginErr').textContent='';
-      document.getElementById('ad-name').value=''; document.getElementById('ad-pass').value='';
-      toast('Добро пожаловать, '+found.name);
-    } else {
-      document.getElementById('loginErr').textContent='Неверное имя или пароль.';
-    }
+    finish(found);
   });
 
   function enterAdmin(){
@@ -520,7 +537,6 @@ applyTheme(saved||(pd?'dark':'light'));
   }
 
   /* Pause orders toggle -> stored in DB (public effect for all visitors) */
-  window.ADMIN_SECRET = 'RvNi4VzcgbjcuLoMlM1KfY7AUofUhgQkfAHFjBYMB0E=';
   var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
   function updatePauseUI(paused){
     var btn=document.getElementById('pauseOrdersBtn');
@@ -829,39 +845,53 @@ applyTheme(saved||(pd?'dark':'light'));
   }
 
   /* Staff (owner) */
+  function drawStaffRow(s, list){
+    var li=document.createElement('li');
+    var who=document.createElement('div'); who.className='who';
+    who.textContent=s.name+'  ';
+    if(s.role==='owner'){
+      var tick=document.createElement('span'); tick.textContent='✔ '; tick.title='Владелец';
+      tick.style.cssText='color:var(--accent-strong);font-weight:900';
+      who.insertBefore(tick, who.firstChild);
+    }
+    var rb=document.createElement('span'); rb.className='role-badge '+ROLE_CLASS[s.role];
+    rb.textContent=ROLE_LABELS[s.role]||s.role;
+    who.appendChild(rb);
+    var meta=document.createElement('div'); meta.className='meta';
+    meta.textContent='Роль: '+(ROLE_LABELS[s.role]||s.role);
+    li.appendChild(who); li.appendChild(meta);
+    if(s.role!=='owner'){
+      var acts=document.createElement('div'); acts.className='acts';
+      var del=document.createElement('button'); del.type='button'; del.className='btn btn-sm btn-danger'; del.textContent='Удалить';
+      del.addEventListener('click',function(){
+        var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+        if(useDb){
+          window.DB.admin.deleteStaff(s.name).then(function(){ renderStaff(); refreshWidgets(); toast('Работник удалён'); });
+          return;
+        }
+        var arr2=loadJSON(STAFF_KEY,[]).filter(function(x){return x.name!==s.name;});
+        if(session===s.name) session=null;
+        saveJSON(STAFF_KEY,arr2);
+        renderStaff(); refreshWidgets(); toast('Работник удалён');
+      });
+      acts.appendChild(del);
+      li.appendChild(acts);
+    }
+    list.appendChild(li);
+  }
   function renderStaff(){
     var list=document.getElementById('staffList');
-    var arr=loadJSON(STAFF_KEY,[]);
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
     list.innerHTML='';
-    arr.forEach(function(s){
-      var li=document.createElement('li');
-      var who=document.createElement('div'); who.className='who';
-      who.textContent=s.name+'  ';
-      if(s.role==='owner'){
-        var tick=document.createElement('span'); tick.textContent='✔ '; tick.title='Владелец';
-        tick.style.cssText='color:var(--accent-strong);font-weight:900';
-        who.insertBefore(tick, who.firstChild);
-      }
-      var rb=document.createElement('span'); rb.className='role-badge '+ROLE_CLASS[s.role];
-      rb.textContent=ROLE_LABELS[s.role]||s.role;
-      who.appendChild(rb);
-      var meta=document.createElement('div'); meta.className='meta';
-      meta.textContent='Пароль: '+(s.pass||'—');
-      li.appendChild(who); li.appendChild(meta);
-      if(s.role!=='owner'){
-        var acts=document.createElement('div'); acts.className='acts';
-        var del=document.createElement('button'); del.type='button'; del.className='btn btn-sm btn-danger'; del.textContent='Удалить';
-        del.addEventListener('click',function(){
-          var arr2=loadJSON(STAFF_KEY,[]).filter(function(x){return x.name!==s.name;});
-          if(session===s.name) session=null;
-          saveJSON(STAFF_KEY,arr2);
-          renderStaff(); refreshWidgets(); toast('Работник удалён');
-        });
-        acts.appendChild(del);
-        li.appendChild(acts);
-      }
-      list.appendChild(li);
-    });
+    if(useDb){
+      window.DB.admin.staffList().then(function(arr){
+        list.innerHTML='';
+        (arr||[]).forEach(function(s){ drawStaffRow(s, list); });
+      }).catch(function(){ list.innerHTML='<li class="empty">Ошибка загрузки работников.</li>'; });
+      return;
+    }
+    var arr=loadJSON(STAFF_KEY,[]);
+    arr.forEach(function(s){ drawStaffRow(s, list); });
   }
   document.getElementById('staffForm').addEventListener('submit',function(e){
     e.preventDefault();
@@ -870,6 +900,16 @@ applyTheme(saved||(pd?'dark':'light'));
     var role=document.getElementById('sf-role').value;
     var msg=document.getElementById('staffMsg');
     if(!name||!pass){ msg.textContent='Заполните имя и пароль.'; msg.className='msg error'; return; }
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+    if(useDb){
+      window.DB.admin.createStaff(name, pass, role).then(function(){
+        document.getElementById('staffForm').reset();
+        msg.textContent='Работник создан: '+name+' ('+(ROLE_LABELS[role]||role)+')';
+        msg.className='msg';
+        renderStaff(); refreshWidgets(); toast('Работник создан');
+      }).catch(function(){ msg.textContent='Ошибка создания (имя занято или нет прав).'; msg.className='msg error'; });
+      return;
+    }
     var arr=loadJSON(STAFF_KEY,[]);
     for(var i=0;i<arr.length;i++){ if(arr[i].name===name){ msg.textContent='Такое имя уже есть.'; msg.className='msg error'; return; } }
     arr.push({name:name,pass:pass,role:role});
@@ -989,6 +1029,14 @@ applyTheme(saved||(pd?'dark':'light'));
     if(!p1){msg.textContent='Введите пароль.';msg.className='msg error';return;}
     if(p1.length<4){msg.textContent='Минимум 4 символа.';msg.className='msg error';return;}
     if(p1!==p2){msg.textContent='Пароли не совпадают.';msg.className='msg error';return;}
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+    if(useDb){
+      window.DB.admin.changeOwnerPass(p1).then(function(){
+        document.getElementById('newPass').value='';document.getElementById('newPass2').value='';
+        msg.textContent='Пароль владельца изменён.';msg.className='msg'; toast('Пароль обновлён');
+      }).catch(function(){ msg.textContent='Ошибка смены пароля.'; msg.className='msg error'; });
+      return;
+    }
     try{storage.setItem(OWNER_PASS,p1);}catch(e){}
     var arr=loadJSON(STAFF_KEY,[]);
     arr.forEach(function(s){if(s.role==='owner')s.pass=p1;});
@@ -999,6 +1047,7 @@ applyTheme(saved||(pd?'dark':'light'));
   });
 
   document.getElementById('logout').addEventListener('click',function(){
+    if(window.DB && window.DB.admin){ window.DB.admin.clearSecret(); }
     session=null; app.style.display='none'; gate.style.display='flex';
     document.getElementById('whoami').textContent='';
     document.getElementById('loginErr').textContent='';
