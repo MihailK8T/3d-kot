@@ -1,0 +1,4 @@
+# Секреты и служебные файлы — не публиковать
+supabase-schema.sql
+supabase-security.sql
+actions*.json

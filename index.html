@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D-KOT — гид по аддитивному производству</title>
+<meta name="description" content="Всё о 3D-печати: материалы, этапы работы, применения и ответы на частые вопросы.">
+<style>
+  :root{
+    --radius:16px;
+    --maxw:1120px;
+    --font-ui:"Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    --font-mono:"Consolas","Menlo",monospace;
+    --accent:#16a34a;
+    --accent-strong:#15803d;
+    --accent-soft:#bbf7d0;
+    --accent-wash:rgba(34,197,94,.12);
+  }
+  /* Dark theme (default) */
+  :root, .theme-dark{
+    --bg:#0b100c;
+    --bg-soft:#10160f;
+    --panel:#141c15;
+    --panel-2:#1a241b;
+    --line:#23301f;
+    --ink:#eef5ec;
+    --muted:#9db89a;
+    --accent-bg:rgba(34,197,94,.14);
+    --btn-text:#04150a;
+    --shadow:0 8px 26px rgba(0,0,0,.45);
+    --glow:0 0 0 3px rgba(34,197,94,.18);
+  }
+  /* Light theme */
+  .theme-light{
+    --bg:#f6faf4;
+    --bg-soft:#ffffff;
+    --panel:#ffffff;
+    --panel-2:#eef5ec;
+    --line:#d8e5d3;
+    --ink:#16211a;
+    --muted:#5b6e60;
+    --accent-bg:rgba(34,197,94,.12);
+    --btn-text:#08301a;
+    --shadow:0 8px 24px rgba(20,40,25,.10);
+    --glow:0 0 0 3px rgba(34,197,94,.22);
+  }
+  /* Accent colors (overrides the green default) */
+  html.accent-orange{
+    --accent:#ea580c; --accent-strong:#c2410c; --accent-soft:#fed7aa;
+    --accent-wash:rgba(234,88,12,.14);
+    --accent-bg:rgba(234,88,12,.15);
+    --glow:0 0 0 3px rgba(234,88,12,.2);
+    --accent-1:#f97316; --accent-2:#fdba74;
+  }
+  html.accent-red{
+    --accent:#dc2626; --accent-strong:#b91c1c; --accent-soft:#fecaca;
+    --accent-wash:rgba(220,38,38,.14);
+    --accent-bg:rgba(220,38,38,.15);
+    --glow:0 0 0 3px rgba(220,38,38,.2);
+    --accent-1:#ef4444; --accent-2:#fca5a5;
+  }
+  html.accent-green{ --accent-1:#22c55e; --accent-2:#86efac; }
+  html{ --accent-1:#22c55e; --accent-2:#86efac; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--font-ui);
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    transition:background .3s ease,color .3s ease;
+  }
+  a{color:var(--accent-strong);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+
+  /* ---------- Header / nav ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex;align-items:center;justify-content:space-between;height:64px;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.04em;font-size:1.08rem}
+  .brand .mark{width:34px;height:34px}
+  .brand b{color:var(--ink)}
+  .brand .mark-accent{color:var(--accent-strong)}
+  .nav-links{display:flex;gap:22px;font-size:.92rem}
+  .nav-links a{color:var(--muted);text-decoration:none;transition:color .15s ease}
+  .nav-links a:hover{color:var(--accent-strong)}
+  .nav-controls{display:flex;align-items:center;gap:10px}
+  .nav-burger{display:none;background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:1.1rem;cursor:pointer}
+  .nav-links.open{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:var(--bg-soft);border-bottom:1px solid var(--line);padding:14px 22px;gap:12px}
+
+  /* Theme toggle */
+  .theme-toggle{
+    display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);
+    background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 8px;
+    cursor:pointer;font-family:inherit;font-weight:600;font-size:.86rem;transition:.18s ease
+  }
+  .theme-toggle:hover{border-color:var(--accent-strong);color:var(--accent-strong)}
+  .theme-toggle .track{position:relative;width:34px;height:18px;border-radius:999px;background:var(--line);flex:none;transition:.2s ease}
+  .theme-toggle .knob{
+    position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:var(--accent);transition:transform .22s ease
+  }
+  .theme-light .theme-toggle .knob{transform:translateX(16px)}
+  .theme-toggle .lbl{display:inline-block}
+  .accent-picker{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:5px 8px;background:var(--panel)}
+  .accent-dot{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s ease, border-color .15s ease}
+  .accent-dot:hover{transform:scale(1.15)}
+  .accent-dot.active{border-color:var(--ink);transform:scale(1.15)}
+  .dot-green{background:#16a34a}
+  .dot-orange{background:#ea580c}
+  .dot-red{background:#dc2626}
+  @media(max-width:720px){
+    .nav-links{display:none}
+    .nav-burger{display:block}
+    .theme-toggle .lbl{display:none}
+    .accent-picker{display:none}
+  }
+  @media(max-width:920px){
+    .accent-picker{display:none}
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{padding:70px 0 60px;position:relative;overflow:hidden}
+  .hero::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(600px 300px at 80% 10%, var(--accent-bg), transparent 70%);
+  }
+  .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;position:relative}
+  .kicker{
+    font-family:var(--font-mono);font-size:.82rem;color:var(--accent-strong);
+    letter-spacing:.16em;text-transform:uppercase;margin-bottom:16px;
+  }
+  .hero h1{
+    font-size:clamp(2rem,4.6vw,3.3rem);line-height:1.08;font-weight:900;
+    letter-spacing:-.01em;margin-bottom:18px;
+  }
+  .hero h1 .hl{color:var(--accent-strong)}
+  .hero p.lead{font-size:1.12rem;color:var(--muted);max-width:54ch;margin-bottom:26px}
+  .cta{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{
+    display:inline-block;padding:12px 22px;border-radius:12px;font-weight:700;font-size:.98rem;
+    border:1px solid transparent;cursor:pointer;transition:transform .14s ease, background .16s ease, box-shadow .16s ease;
+    font-family:inherit
+  }
+  .btn-primary{background:var(--accent);color:var(--btn-text);box-shadow:0 4px 14px var(--accent-wash)}
+  .btn-primary:hover{background:var(--accent-strong);color:#fff;transform:translateY(-1px)}
+  .btn-ghost{border-color:var(--line);color:var(--ink);background:transparent}
+  .btn-ghost:hover{border-color:var(--accent-strong);color:var(--accent-strong)}
+  .btn:active{transform:translateY(1px)}
+
+  /* CSS layer illustration (animated) */
+  .slicer{position:relative;height:300px}
+  .bed{
+    position:absolute;left:0;right:0;bottom:10px;height:14px;border-radius:6px;
+    background:linear-gradient(180deg,var(--panel-2),var(--line));
+  }
+  .layers{position:absolute;left:12%;right:12%;bottom:24px}
+  .layers .layer{
+    height:13px;border-radius:5px;margin-bottom:5px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-soft));
+    opacity:.95;width:100%;transform-origin:left;
+    animation:layerIn .6s ease backwards
+  }
+  .layers .layer:nth-child(odd){background:linear-gradient(90deg,var(--accent-1),var(--accent-2))}
+  .layers .layer:nth-child(1){animation-delay:.05s}
+  .layers .layer:nth-child(2){animation-delay:.1s}
+  .layers .layer:nth-child(3){animation-delay:.15s}
+  .layers .layer:nth-child(4){animation-delay:.2s}
+  .layers .layer:nth-child(5){animation-delay:.25s}
+  .layers .layer:nth-child(6){animation-delay:.3s}
+  .layers .layer:nth-child(7){animation-delay:.35s}
+  .layers .layer:nth-child(8){animation-delay:.4s}
+  @keyframes layerIn{from{opacity:0;transform:scaleX(.2)}to{opacity:.95;transform:scaleX(1)}}
+  .nozzle{
+    position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;
+    border-top:44px solid var(--ink);filter:drop-shadow(0 4px 10px rgba(0,0,0,.35));
+    animation:nozzleBob 3.2s ease-in-out infinite
+  }
+  .nozzle::after{
+    content:"";position:absolute;top:-46px;left:-8px;width:16px;height:16px;border-radius:50%;
+    background:var(--accent);box-shadow:0 0 0 5px var(--accent-wash);animation:pulse 1.8s ease infinite
+  }
+  @keyframes nozzleBob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 4px var(--accent-wash)}50%{box-shadow:0 0 0 10px transparent}}
+  .tick{font-family:var(--font-mono);font-size:.7rem;color:var(--muted)}
+  .tick-t{position:absolute;top:76px;left:4%}
+  .tick-b{position:absolute;bottom:-6px;right:2%;color:var(--accent-strong)}
+
+  @media(max-width:860px){
+    .hero-grid{grid-template-columns:1fr}
+    .slicer{height:220px}
+  }
+
+  /* ---------- Sections ---------- */
+  section{padding:64px 0;border-top:1px solid var(--line)}
+  .sec-head{margin-bottom:34px;max-width:720px}
+  .sec-head h2{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;margin-bottom:10px}
+  .sec-head p{color:var(--muted)}
+  .num{font-family:var(--font-mono);color:var(--accent-strong);font-size:.9rem;margin-bottom:8px;display:block}
+
+  /* Scroll reveal */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- Materials ---------- */
+  .mats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .mat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+  .mat:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:var(--shadow)}
+  .mat .swatch{width:44px;height:44px;border-radius:12px;margin-bottom:14px}
+  .mat h3{font-size:1.05rem;margin-bottom:6px}
+  .mat .tag{display:inline-block;font-family:var(--font-mono);font-size:.74rem;color:var(--accent-strong);border:1px solid var(--accent-strong);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+  .mat p{color:var(--muted);font-size:.94rem}
+  .mat .pros{margin:12px 0 0;font-size:.92rem;color:var(--ink)}
+  @media(max-width:860px){.mats{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.mats{grid-template-columns:1fr}}
+
+  /* ---------- Workflow ---------- */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:step}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;position:relative;transition:transform .16s ease,border-color .16s ease}
+  .step:hover{transform:translateY(-3px);border-color:var(--accent)}
+  .step::before{
+    counter-increment:step;content:"0" counter(step);
+    font-family:var(--font-mono);font-size:1rem;color:var(--accent-strong);
+    display:block;margin-bottom:10px
+  }
+  .step h3{font-size:1rem;margin-bottom:6px}
+  .step p{color:var(--muted);font-size:.9rem}
+  @media(max-width:860px){.steps{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.steps{grid-template-columns:1fr}}
+
+  /* ---------- Applications ---------- */
+  .apps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .app{border:1px solid var(--line);border-radius:var(--radius);padding:20px;background:var(--accent-bg);transition:transform .16s ease,border-color .16s ease}
+  .app:hover{transform:translateY(-3px);border-color:var(--accent)}
+  .app .ico{font-size:1.7rem;margin-bottom:10px}
+  .app h3{font-size:1rem;margin-bottom:6px}
+  .app p{color:var(--muted);font-size:.92rem}
+  @media(max-width:860px){.apps{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.apps{grid-template-columns:1fr}}
+
+  /* ---------- FAQ ---------- */
+  .faq{max-width:760px}
+  .faq-item{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;background:var(--panel);transition:border-color .16s ease}
+  .faq-item:hover{border-color:var(--accent-strong)}
+  .faq-q{width:100%;text-align:left;background:none;border:none;color:var(--ink);font-size:1rem;font-weight:600;padding:18px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:14px;font-family:inherit}
+  .faq-q .chev{transition:transform .2s ease;color:var(--muted);font-family:var(--font-mono)}
+  .faq-item.open .chev{transform:rotate(45deg);color:var(--accent)}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .25s ease}
+  .faq-a p{padding:0 20px 18px;color:var(--muted)}
+
+  /* ---------- Glossary strip ---------- */
+  .gloss{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .gloss .g-term{background:var(--bg-soft);border-left:3px solid var(--accent);padding:16px;border-radius:8px}
+  .gloss .g-term b{display:block;font-family:var(--font-mono);font-size:.95rem;margin-bottom:6px;color:var(--accent-strong)}
+  .gloss .g-term span{color:var(--muted);font-size:.88rem}
+  @media(max-width:860px){.gloss{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.gloss{grid-template-columns:1fr}}
+
+  /* ---------- Order form ---------- */
+  .order-grid{display:block;max-width:720px}
+  form{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:24px;
+    box-shadow:var(--shadow)
+  }
+  .field{margin-bottom:16px}
+  .field.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:480px){.field.row{grid-template-columns:1fr}}
+  label{display:block;font-size:.88rem;font-weight:600;color:var(--muted);margin-bottom:6px}
+  input,select,textarea{
+    width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg-soft);color:var(--ink);font-family:inherit;font-size:.98rem;
+    transition:border-color .16s ease,box-shadow .16s ease
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:var(--glow)}
+  textarea{resize:vertical}
+  .form-msg{margin-top:12px;font-size:.92rem;color:var(--accent-strong);font-weight:600}
+  .form-msg.error{color:#dc2626}
+
+  /* ---------- Account ---------- */
+  .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+  @media(max-width:720px){.account-grid{grid-template-columns:1fr}}
+  .auth-panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+  .auth-tabs{display:flex;gap:8px;margin-bottom:20px}
+  .authtab{
+    flex:1;padding:9px;border-radius:10px;border:1px solid var(--line);background:transparent;
+    color:var(--muted);font-weight:700;cursor:pointer;font-family:inherit;font-size:.94rem;transition:.15s ease
+  }
+  .authtab.active{background:var(--accent);border-color:var(--accent);color:var(--btn-text)}
+  .auth-form{display:none}
+  .auth-form.active{display:block}
+  .status-badge{
+    display:inline-block;padding:3px 11px;border-radius:999px;font-size:.8rem;font-weight:700;
+    font-family:var(--font-mono)
+  }
+  .status-processing{background:rgba(234,179,8,.18);color:#ca8a04}
+  .theme-light .status-processing{color:#a36b00}
+  .status-accepted{background:rgba(34,197,94,.18);color:var(--accent-strong)}
+  .status-delivering{background:rgba(59,130,246,.2);color:#3b82f6}
+  .theme-light .status-delivering{color:#1d4ed8}
+  .status-rejected{background:rgba(220,38,38,.16);color:#dc2626}
+  .profile-card{margin-bottom:18px;padding:16px;background:var(--bg-soft);border:1px solid var(--line);border-radius:12px}
+  .profile-card .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
+  .profile-card .row:last-child{border-bottom:none}
+  .profile-card .row .k{color:var(--muted)}
+  .profile-card .row .v{font-weight:600;text-align:right}
+  .order-item{background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  .order-item .head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}
+  .order-item .desc{color:var(--muted);font-size:.9rem}
+  .order-item .meta{font-family:var(--font-mono);font-size:.74rem;color:var(--muted);margin-top:4px}
+  .acct-list{list-style:none}
+  .acct-empty{color:var(--muted)}
+
+  /* ---------- File upload ---------- */
+  .file-box{
+    border:2px dashed var(--line);border-radius:12px;padding:20px;text-align:center;
+    cursor:pointer;transition:border-color .16s ease,background .16s ease;background:var(--bg-soft)
+  }
+  .file-box:hover,.file-box.drag{border-color:var(--accent);background:var(--accent-bg)}
+  .file-box .ico{font-size:1.8rem;margin-bottom:6px}
+  .file-box .st{color:var(--muted);font-size:.9rem}
+  .file-box .st small{display:block;font-family:var(--font-mono);font-size:.74rem;opacity:.8}
+  .file-picked{margin-top:10px;font-size:.9rem;color:var(--accent-strong);font-weight:600;word-break:break-all}
+
+  /* ---------- Messenger ---------- */
+  .chat-btn{
+    position:fixed;right:20px;bottom:20px;z-index:90;
+    border:none;border-radius:999px;padding:14px 20px;font-weight:800;font-size:.98rem;
+    background:var(--accent);color:var(--btn-text);cursor:pointer;font-family:inherit;
+    box-shadow:0 6px 20px var(--accent-wash);transition:transform .16s ease
+  }
+  .chat-btn:hover{transform:translateY(-2px)}
+  .chat-btn .dot{position:absolute;top:6px;right:10px;width:9px;height:9px;border-radius:50%;background:#fff;opacity:.9}
+  .chat-window{
+    position:fixed;right:20px;bottom:84px;z-index:90;width:360px;max-width:calc(100vw - 40px);
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    box-shadow:var(--shadow);display:none;flex-direction:column;max-height:70vh
+  }
+  .chat-window.open{display:flex;animation:fadeUp .2s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .chat-head{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:var(--bg-soft)}
+  .chat-head b{font-size:.95rem}
+  .chat-head .close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer}
+  .chat-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;min-height:180px}
+  .chat-msg{max-width:80%;padding:9px 12px;border-radius:12px;font-size:.9rem;white-space:pre-wrap;word-break:break-word}
+  .chat-msg.me{align-self:flex-end;background:var(--accent);color:var(--btn-text);border-bottom-right-radius:4px}
+  .chat-msg.them{align-self:flex-start;background:var(--bg-soft);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .chat-msg .t{display:block;font-size:.68rem;opacity:.7;margin-top:3px;font-family:var(--font-mono)}
+  .chat-empty{color:var(--muted);text-align:center;font-size:.85rem;margin:auto;padding:10px}
+  .chat-input{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+  .chat-input textarea{flex:1;margin:0;height:44px;max-height:88px}
+  .chat-input .send{background:var(--accent);color:var(--btn-text);border:none;border-radius:10px;padding:0 16px;font-weight:800;cursor:pointer;font-family:inherit}
+
+  /* ---------- Contact ticket (unauthorized) ---------- */
+  .contact-grid{display:grid;grid-template-columns:1fr;gap:16px;max-width:720px}
+  .contact-box{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .contact-box h3{font-size:1.02rem;margin-bottom:4px}
+  .contact-box p{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+
+  /* ---------- Cookie banner ---------- */
+  .cookie-banner{
+    position:fixed;left:16px;right:16px;bottom:16px;z-index:120;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;
+    box-shadow:var(--shadow);display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap
+  }
+  .cookie-banner p{font-size:.88rem;color:var(--muted);max-width:640px}
+  .cookie-banner .cta-row{display:flex;gap:10px;flex-wrap:wrap}
+  .cookie-banner.hidden{display:none}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--line);padding:40px 0 50px;color:var(--muted);font-size:.9rem}
+  .foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+  .foot .mono{font-family:var(--font-mono);color:var(--accent-strong)}
+  .admin-link{font-weight:700}
+
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+    background:var(--panel);border:1px solid var(--accent);color:var(--ink);padding:12px 20px;border-radius:10px;
+    font-size:.92rem;transition:.25s ease;z-index:100}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    html{scroll-behavior:auto}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 48 48" aria-hidden="true" style="color:var(--ink)">
+        <path d="M20 16l-5-7c-2 1-4 3-5 6l7 5z" fill="currentColor"/>
+        <path d="M28 16l5-7c2 1 4 3 5 6l-7 5z" fill="currentColor"/>
+        <circle cx="16" cy="22" r="8" fill="currentColor"/>
+        <circle cx="32" cy="22" r="8" fill="currentColor"/>
+        <rect x="13" y="26" width="22" height="16" rx="6" fill="currentColor"/>
+        <path d="M16 30h16v4H16z" fill="var(--bg)"/>
+        <circle cx="20" cy="23" r="1.6" fill="var(--bg)"/>
+        <circle cx="28" cy="23" r="1.6" fill="var(--bg)"/>
+        <path d="M23 25v4" stroke="var(--bg)" stroke-width="1.4"/>
+        <path d="M25 25v4" stroke="var(--bg)" stroke-width="1.4"/>
+      </svg>
+      <span><b>3D-</b><span class="mark-accent">KOT</span></span>
+    </div>
+    <nav class="nav-links" id="navLinks">
+      <a href="#materials">Материалы</a>
+      <a href="#workflow">Процесс</a>
+      <a href="#apps">Применение</a>
+      <a href="articles.html">Статьи</a>
+      <a href="order.html">Заказать</a>
+      <a href="register.html">Аккаунт</a>
+    </nav>
+    <div class="nav-controls">
+      <a href="register.html" class="btn btn-primary" id="authBtn" style="padding:8px 16px;font-size:.88rem">Войти / Регистрация</a>
+      <div class="accent-picker" role="group" aria-label="Цвет акцента">
+        <button type="button" class="accent-dot dot-green" data-accent="green" aria-label="Зелёный"></button>
+        <button type="button" class="accent-dot dot-orange" data-accent="orange" aria-label="Оранжевый"></button>
+        <button type="button" class="accent-dot dot-red" data-accent="red" aria-label="Красный"></button>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">
+        <span class="track" aria-hidden="true"><span class="knob"></span></span>
+        <span class="lbl" id="themeLabel">Тёмная</span>
+      </button>
+      <button class="nav-burger" id="burger" aria-label="Открыть меню" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="kicker">// аддитивное производство</div>
+      <h1 data-edit="hero-title">Печатаем объекты <span class="hl">слой за слоем</span> — из цифры в материю</h1>
+      <p class="lead" data-edit="hero-lead">3D-печать (аддитивное производство) создаёт объёмные детали из цифровых моделей, наращивая материал по слоям. Просто и наглядно: материалы, процесс и заказ печати.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="order.html">Заказать печать</a>
+        <a class="btn btn-ghost" href="#workflow">Как устроен процесс</a>
+      </div>
+    </div>
+    <div class="slicer" aria-hidden="true">
+      <div class="nozzle"></div>
+      <div class="layers">
+        <div class="layer"></div><div class="layer"></div><div class="layer"></div><div class="layer"></div><div class="layer"></div><div class="layer"></div><div class="layer"></div><div class="layer"></div>
+      </div>
+      <div class="bed"></div>
+      <span class="tick tick-t">x0.2mm / layer</span>
+      <span class="tick tick-b">extruder: 215°C</span>
+    </div>
+  </div>
+</section>
+
+<section id="materials">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="num">01 /</span>
+      <h2 data-edit="t-materials-title">Материалы для печати</h2>
+      <p data-edit="t-materials-sub">Выбор филамента определяет прочность, температуру эксплуатации и внешний вид детали.</p>
+    </div>
+    <div class="mats">
+      <div class="mat">
+        <div class="swatch" style="background:#4fba8f"></div>
+        <span class="tag">новичкам</span>
+        <h3>PLA</h3>
+        <p>Биопластик из кукурузного крахмала. Лёгкий в печати, не требует подогрева. Идеален для моделей и декора.</p>
+        <p class="pros">Печать при 190–220°C, без капризов, но боится жары (размягчается ~60°C).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="workflow">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="num">03 /</span>
+      <h2 data-edit="t-workflow-title">Как проходит печать</h2>
+      <p data-edit="t-workflow-sub">От идеи до готовой детали — четыре этапа, в каждом есть свои инструменты.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <h3>Модель</h3>
+        <p>Создайте или скачайте 3D-модель в формате STL / 3MF: CAD, Blender, Thingiverse, Printables.</p>
+      </div>
+      <div class="step">
+        <h3>Слайсер</h3>
+        <p>Программа (UltiMaker Cura, PrusaSlicer, OrcaSlicer) режет модель на слои и генерирует G-code.</p>
+      </div>
+      <div class="step">
+        <h3>Печать</h3>
+        <p>Принтер укладывает слои по заданным настройкам слоя, температуры и скорости.</p>
+      </div>
+      <div class="step">
+        <h3>Постобработка</h3>
+        <p>Удаляем поддержки, шлифуем, красим или глянцуем паром готовую модель.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="apps">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="num">04 /</span>
+      <h2 data-edit="t-apps-title">Где применяют 3D-печать</h2>
+      <p data-edit="t-apps-sub">От хобби до серийного производства — 3D-печать закрывает широкий круг задач.</p>
+    </div>
+    <div class="apps">
+      <div class="app"><div class="ico">⚙️</div><h3>Прототипирование</h3><p>Быстрые итерации деталей до запуска в серию, проверка геометрии и сборки.</p></div>
+      <div class="app"><div class="ico">🏗</div><h3>Инженерия</h3><p>Функциональные узлы, шестерни, крепёж, запчасти по месту эксплуатации.</p></div>
+      <div class="app"><div class="ico">🦷</div><h3>Медицина</h3><p>Зубные модели, имплантаты и хирургические шаблоны по данным пациента.</p></div>
+      <div class="app"><div class="ico">🪐</div><h3>Хобби и творчество</h3><p>Фигурки, декорации, кастомизация гаджетов, украшения и миниатюры.</p></div>
+      <div class="app"><div class="ico">📦</div><h3>Мелкие серии</h3><p>Изделия на заказ без литейной оснастки — тиражи до сотен штук.</p></div>
+      <div class="app"><div class="ico">🚀</div><h3>Аэрокосмос и авто</h3><p>Облегчённые узлы, топливные элементы, инструмент и оснастка.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="glossary">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="num">05 /</span>
+      <h2>Мини-словарь новичка</h2>
+    </div>
+    <div class="gloss">
+      <div class="g-term"><b>Филамент</b><span>Пластиковая нить 1,75 мм — сырьё для печати.</span></div>
+      <div class="g-term"><b>Слайсер</b><span>Программа, превращающая модель в инструкции для принтера.</span></div>
+      <div class="g-term"><b>G-code</b><span>Язык команд движения и температуры принтера.</span></div>
+      <div class="g-term"><b>Поддержки</b><span>Временные опоры под нависающими элементами модели.</span></div>
+      <div class="g-term"><b>Сопло</b><span>Нагреваемая насадка, через которую выдавливается пластик.</span></div>
+      <div class="g-term"><b>Слой 0,2 мм</b><span>Стандартная высота слоя — баланс скорости и качества.</span></div>
+      <div class="g-term"><b>Bed / стол</b><span>Нагреваемая платформа, на которую ложатся первые слои.</span></div>
+      <div class="g-term"><b>Retraction</b><span>Оттяг нити назад, чтобы убрать «паутинку» между элементами.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="num">06 /</span>
+      <h2>Частые вопросы</h2>
+    </div>
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">С чего начать новичку?<span class="chev">+</span></button>
+        <div class="faq-a"><p>Возьмите доступный 3D-принтер и филамент PLA. Освойте слайсер на стандартном профиле, напечатайте тестовую модель и двигайтесь к своим деталям.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">Сколько стоит печать?<span class="chev">+</span></button>
+        <div class="faq-a"><p>Принтер начального уровня — от 15–20 тыс. ₽. Килограмм PLA — около 1200–2000 ₽. Маленькая деталь вроде брелока обойдётся в копейки материала плюс электроэнергия.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">Печать опасна?<span class="chev">+</span></button>
+        <div class="faq-a"><p>При плавлении выделяются частицы и летучие вещества, поэтому печатайте в проветриваемом помещении. С фотополимерами работайте в перчатках и с вентиляцией.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">Можно ли напечатать металл?<span class="chev">+</span></button>
+        <div class="faq-a"><p>Да, металлопорошок спекается лазером на промышленных установках. Для дома ближайший вариант — филаменты с металлическим наполнителем или производство на заказ.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">Где брать модели?<span class="chev">+</span></button>
+        <div class="faq-a"><p>Популярные библиотеки — Printables, Thingiverse, MakerWorld и MyMiniFactory. Оттуда можно скачать готовые STL и печатать почти сразу.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="order">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="num">06 /</span>
+      <h2>Заказать печать</h2>
+      <p data-edit="t-order-sub">Оформите заказ на отдельной странице: имя, почта, телефон, пластик и описание. Мы свяжемся с вами для согласования.</p>
+    </div>
+    <div class="order-grid">
+      <div style="max-width:440px">
+        <p style="color:var(--muted);margin-bottom:18px">Заполнение формы займёт пару минут. При необходимости прикрепите файл 3D-модели.</p>
+        <a href="order.html" class="btn btn-primary" style="text-align:center;display:block">Перейти к заказу</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="account">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="num">07 /</span>
+      <h2 id="accountTitle">Аккаунт</h2>
+      <p>Создайте аккаунт, чтобы отправлять заявки и отслеживать их статусы.</p>
+    </div>
+    <div class="account-grid">
+
+      <!-- Auth prompt (shown when logged out; forms live on register.html) -->
+      <div class="auth-panel" id="authPanel">
+        <div class="contact-box">
+          <h3>Вход и регистрация</h3>
+          <p>Войдите в аккаунт или создайте новый, чтобы отправлять заказы и следить за их статусами.</p>
+          <a class="btn btn-primary" href="register.html" style="text-align:center;display:block">Войти / Зарегистрироваться</a>
+        </div>
+
+        <!-- Contact ticket (for logged-out visitors) -->
+        <div class="contact-box" id="contactBox" style="margin-top:18px">
+          <h3>Связь с нами</h3>
+          <p>У вас нет аккаунта? Напишите нам — оставим заявку на общение, ответим как можно скорее.</p>
+          <form id="contactForm" novalidate>
+            <div class="field"><label for="ct-name">Ваше имя</label>
+              <input type="text" id="ct-name" required></div>
+            <div class="field"><label for="ct-email">Почта или телефон</label>
+              <input type="text" id="ct-email" required></div>
+            <div class="field"><label for="ct-msg">Сообщение</label>
+              <textarea id="ct-msg" rows="3" placeholder="Ваш вопрос…"></textarea></div>
+            <button type="submit" class="btn btn-primary">Отправить сообщение</button>
+            <p class="form-msg" id="contactMsg" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+
+      <!-- Profile + orders (shown when logged in) -->
+      <div class="profile-wrap" id="profileWrap" style="display:none">
+        <div class="auth-panel">
+          <div class="tabs" style="display:flex;gap:8px;margin-bottom:20px">
+            <button class="authtab" id="tabSettings" data-ptab="settings" aria-selected="false">Настройки</button>
+            <button class="authtab active" id="tabOrders" data-ptab="orders" aria-selected="true">Мои заявки</button>
+          </div>
+
+          <div id="ptab-orders">
+            <div class="profile-card">
+              <div id="acctAvatarWrap" style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+                <img id="acctAvatar" alt="Аватар" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Crect width='56' height='56' rx='28' fill='%23162031'/%3E%3Ccircle cx='28' cy='22' r='10' fill='%239db89a'/%3E%3Crect x='14' y='30' width='28' height='20' rx='9' fill='%239db89a'/%3E%3C/svg%3E" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)">
+                <div>
+                  <div style="font-weight:700" id="acctName2"></div>
+                  <div style="color:var(--muted);font-size:.85rem">Аккаунт</div>
+                </div>
+              </div>
+              <div class="row"><span class="k">Имя пользователя</span><span class="v" id="acctName"></span></div>
+              <div class="row"><span class="k">Почта</span><span class="v" id="acctEmail"></span></div>
+            </div>
+            <h3 style="font-size:.95rem;margin-bottom:10px">Активные заявки</h3>
+            <ul class="acct-list" id="myOrders"></ul>
+            <p class="status-badge" aria-hidden="true" style="position:absolute;opacity:0">.</p>
+          </div>
+
+          <div id="ptab-settings" style="display:none">
+            <h3 style="font-size:1rem;margin-bottom:14px">Редактирование профиля</h3>
+            <form id="profileForm" novalidate>
+              <div class="field"><label for="pf-name">Имя пользователя</label>
+                <input type="text" id="pf-name" required></div>
+              <div class="field"><label for="pf-email">Почта</label>
+                <input type="email" id="pf-email" required></div>
+              <div class="field"><label for="pf-pass">Новый пароль</label>
+                <input type="password" id="pf-pass" autocomplete="new-password"></div>
+              <div class="field"><label for="pf-avatar">Аватар</label>
+                <input type="file" id="pf-avatar" accept="image/*" aria-label="Загрузить аватар">
+                <p style="font-size:.8rem;color:var(--muted);margin-top:4px">Можно загрузить изображение до 1 МБ.</p></div>
+              <button type="submit" class="btn btn-primary">Сохранить</button>
+              <p class="form-msg" id="profileMsg" role="status" aria-live="polite"></p>
+            </form>
+            <button type="button" class="btn btn-ghost" id="logoutBtn" style="margin-top:12px">Выйти</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div class="brand">
+      <span><b>3D-</b><span>KOT</span></span>
+    </div>
+    <span>© 3Dkot, все права защищены</span>
+    <a href="3d-print-admin.html" class="admin-link">Админ-панель</a>
+  </div>
+</footer>
+
+<!-- Messenger (shows only when logged in) -->
+<button class="chat-btn" id="chatBtn" style="display:none" aria-label="Открыть чат">
+  💬 <span id="chatBadge"></span>
+</button>
+<div class="chat-window" id="chatWindow" role="dialog" aria-label="Чат с поддержкой">
+  <div class="chat-head">
+    <b>Чат с поддержкой</b>
+    <button class="close" id="chatClose" aria-label="Закрыть чат">×</button>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="chat-input">
+    <textarea id="chatText" rows="1" placeholder="Напишите сообщение…" aria-label="Сообщение в чат"></textarea>
+    <button class="send" id="chatSend">➤</button>
+  </div>
+</div>
+
+<!-- Cookie banner -->
+<div class="cookie-banner" id="cookieBanner">
+  <p>Мы используем файлы cookie для корректной работы сайта и аналитики. Продолжая пользоваться сайтом, вы соглашаетесь с обработкой файлов cookie.</p>
+  <div class="cta-row">
+    <button class="btn btn-primary" id="cookieAccept">Принять</button>
+    <button class="btn btn-ghost" id="cookieDecline">Отклонить</button>
+  </div>
+</div>
+
+<!-- Agreement banner -->
+<div class="cookie-banner" id="agreeBanner">
+  <p>Продолжая использовать сайт, вы принимаете условия
+    <a href="agreement.html" style="font-weight:700;text-decoration:underline">Пользовательского соглашения</a>.</p>
+  <div class="cta-row">
+    <button class="btn btn-primary" id="agreeAccept">Принять</button>
+    <button class="btn btn-ghost" id="agreeRead" onclick="location.href='agreement.html'">Прочитать</button>
+  </div>
+</div>
+
+<script src="db.js"></script>
+<script>
+(function(){
+  /* ---------- Theme ---------- */
+  var THEME_KEY = '3dprint_theme';
+  var root = document.documentElement;
+  var toggle = document.getElementById('themeToggle');
+  var label = document.getElementById('themeLabel');
+  function applyTheme(name){
+    root.classList.remove('theme-dark','theme-light');
+    root.classList.add('theme-' + name);
+    if(label) label.textContent = name === 'dark' ? 'Тёмная' : 'Светлая';
+  }
+  var saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch(e){}
+  var prefsDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved || (prefsDark ? 'dark' : 'light'));
+  if(toggle) toggle.addEventListener('click', function(){
+    var cur = root.classList.contains('theme-light') ? 'light' : 'dark';
+    var next = cur === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch(e){}
+  });
+
+  /* ---------- Accent color ---------- */
+  var ACCENT_KEY = '3dprint_accent';
+  var rootEl = document.documentElement;
+  function applyAccent(a){
+    rootEl.classList.remove('accent-green','accent-orange','accent-red');
+    rootEl.classList.add('accent-' + (a || 'green'));
+    document.querySelectorAll('.accent-dot').forEach(function(d){
+      d.classList.toggle('active', d.dataset.accent === (a||'green'));
+    });
+  }
+  var savedAccent = null;
+  try { savedAccent = localStorage.getItem(ACCENT_KEY); } catch(e){}
+  applyAccent(savedAccent || 'green');
+  document.querySelectorAll('.accent-dot').forEach(function(d){
+    d.addEventListener('click', function(){
+      var acc = d.dataset.accent;
+      applyAccent(acc);
+      try { localStorage.setItem(ACCENT_KEY, acc); } catch(e){}
+    });
+  });
+
+  var burger = document.getElementById('burger');
+  var nav = document.getElementById('navLinks');
+  burger.addEventListener('click', function(){
+    var open = nav.classList.toggle('open');
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  var links = nav.querySelectorAll('a');
+  links.forEach(function(l){ l.addEventListener('click', function(){ nav.classList.remove('open'); burger.setAttribute('aria-expanded','false'); }); });
+
+  var faqItems = document.querySelectorAll('.faq-item');
+  faqItems.forEach(function(item){
+    var q = item.querySelector('.faq-q');
+    var a = item.querySelector('.faq-a');
+    q.addEventListener('click', function(){
+      var open = item.classList.toggle('open');
+      q.setAttribute('aria-expanded', open ? 'true' : 'false');
+      a.style.maxHeight = open ? a.scrollHeight + 'px' : '0px';
+    });
+  });
+
+  /* ---------- Scroll reveal ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, {threshold:.12});
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---------- Account & orders (localStorage) ---------- */
+  var storage = (function(){
+    try { var t='__t'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return localStorage; }
+    catch(e){ return null; }
+  })();
+  var USERS_KEY = '3dprint_users';
+  var ORDERS_KEY = '3dprint_orders';
+  var SESSION_KEY = '3dprint_session';
+  var CONTENT_KEY = '3dprint_content';
+  var STATS_KEY = '3dprint_stats';
+  var PAUSE_KEY = '3dprint_pause';
+
+  function loadJSON(key, def){
+    if(!storage) return def;
+    try { var raw = storage.getItem(key); return raw ? JSON.parse(raw) : def; }
+    catch(e){ return def; }
+  }
+  function saveJSON(key, val){
+    if(storage){ try { storage.setItem(key, JSON.stringify(val)); } catch(e){} }
+  }
+  var users = loadJSON(USERS_KEY, []);
+  var orders = loadJSON(ORDERS_KEY, []);
+  function saveUsers(){ saveJSON(USERS_KEY, users); }
+  function saveOrders(){ saveJSON(ORDERS_KEY, orders); }
+
+  var STATUS_LABELS = {
+    'processing': 'В обработке',
+    'accepted': 'Принят, ожидает правок',
+    'delivering': 'Доставляется',
+    'rejected': 'Отказ'
+  };
+
+  function currentUser(){
+    if(!storage) return null;
+    var name = storage.getItem(SESSION_KEY);
+    if(!name) return null;
+    for(var i=0;i<users.length;i++){ if(users[i].name === name) return users[i]; }
+    return null;
+  }
+
+  /* ---- Profile (settings) ---- */
+  document.getElementById('profileForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var me = currentUser();
+    if(!me) return;
+    var nM = document.getElementById('pf-name').value.trim();
+    var nM2 = document.getElementById('pf-email').value.trim();
+    var nP = document.getElementById('pf-pass').value;
+    var msg = document.getElementById('profileMsg');
+    if(!nM || !nM2){ msg.textContent='Имя и почта обязательны.'; msg.className='form-msg error'; return; }
+    for(var i=0;i<users.length;i++){
+      if(users[i] !== me && users[i].name === nM){ msg.textContent='Имя занято.'; msg.className='form-msg error'; return; }
+      if(users[i] !== me && users[i].email.toLowerCase() === nM2.toLowerCase()){ msg.textContent='Почта уже используется.'; msg.className='form-msg error'; return; }
+    }
+    me.name = nM; me.email = nM2;
+    if(nP) me.pass = nP;
+    var avEl = document.getElementById('pf-avatar');
+    if(avEl && avEl.files && avEl.files[0]){
+      var avf = avEl.files[0];
+      if(avf.size > 1024*1024){
+        msg.textContent = 'Аватар больше 1 МБ.'; msg.className = 'form-msg error'; return;
+      }
+      var avr = new FileReader();
+      avr.onload = function(){ me.avatar = String(avr.result); saveUsers(); if(storage) storage.setItem(SESSION_KEY, me.name); document.getElementById('profileForm').reset(); msg.textContent = 'Профиль обновлён.'; msg.className = 'form-msg'; toast('Профиль обновлён'); renderAuthState(); };
+      avr.readAsDataURL(avf);
+      return;
+    }
+    saveUsers();
+    if(storage) storage.setItem(SESSION_KEY, me.name);
+    document.getElementById('profileForm').reset();
+    msg.textContent = 'Профиль обновлён.'; msg.className = 'form-msg';
+    toast('Профиль обновлён');
+    renderAuthState();
+  });
+
+  /* ---- Profile / orders tab switch ---- */
+  document.getElementById('tabSettings').addEventListener('click', function(){ switchProfileTab('settings'); });
+  document.getElementById('tabOrders').addEventListener('click', function(){ switchProfileTab('orders'); });
+  function switchProfileTab(t){
+    document.getElementById('tabSettings').classList.toggle('active', t==='settings');
+    document.getElementById('tabOrders').classList.toggle('active', t==='orders');
+    document.getElementById('tabSettings').setAttribute('aria-selected', t==='settings');
+    document.getElementById('tabOrders').setAttribute('aria-selected', t==='orders');
+    document.getElementById('ptab-settings').style.display = t==='settings' ? 'block' : 'none';
+    document.getElementById('ptab-orders').style.display = t==='orders' ? 'block' : 'none';
+  }
+
+  /* ---- Render auth state (logged in/out) ---- */
+  function statusClass(s){ return 'status-' + (s || 'processing'); }
+  function renderOrders(){
+    var me = currentUser();
+    var list = document.getElementById('myOrders');
+    list.innerHTML = '';
+    if(!me){ list.innerHTML = ''; return; }
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+    if(useDb){
+      list.innerHTML = '<li class="acct-empty">Загрузка…</li>';
+      window.DB.orders.all().then(function(all){
+        var mine = all.filter(function(o){ return o.user_name === me.name; }).slice().reverse();
+        drawMyOrders(list, mine);
+      }).catch(function(){ list.innerHTML='<li class="acct-empty">Ошибка загрузки заявок.</li>'; });
+      return;
+    }
+    var mine = orders.filter(function(o){ return o.user === me.name; }).slice().reverse();
+    drawMyOrders(list, mine);
+  }
+  function drawMyOrders(list, mine){
+    list.innerHTML = '';
+    if(!mine.length){
+      var li = document.createElement('li');
+      li.className = 'acct-empty';
+      li.textContent = 'У вас пока нет заявок.';
+      list.appendChild(li);
+      return;
+    }
+    mine.forEach(function(o){
+      var li = document.createElement('li');
+      li.className = 'order-item';
+      var head = document.createElement('div'); head.className = 'head';
+      var hinfo = document.createElement('div');
+      hinfo.style.fontWeight='700';
+      hinfo.textContent = (o.desc||o.description) || 'Заявка';
+      var badge = document.createElement('span');
+      badge.className = 'status-badge ' + statusClass(o.status);
+      badge.textContent = STATUS_LABELS[o.status] || 'В обработке';
+      head.appendChild(hinfo); head.appendChild(badge);
+      var meta = document.createElement('div'); meta.className = 'meta';
+      var d = o.date || (o.created_at?new Date(o.created_at).toLocaleString('ru-RU'):'');
+      meta.textContent = 'Материал: ' + (o.material||'—') + ' · ' + d;
+      li.appendChild(head); li.appendChild(meta);
+      if(o.status==='rejected' && (o.rejectReason||o.reject_reason)){
+        var rn = document.createElement('div');
+        rn.style.cssText='margin-top:8px;font-size:.84rem;color:#dc2626;background:rgba(220,38,38,.08);border-radius:8px;padding:7px 10px;border:1px solid rgba(220,38,38,.25);word-break:break-word';
+        rn.innerHTML='<b>Причина отказа:</b> '+(o.rejectReason||o.reject_reason);
+        li.appendChild(rn);
+      }
+      list.appendChild(li);
+    });
+  }
+  function renderAuthState(){
+    var me = currentUser();
+    var authPanel = document.getElementById('authPanel');
+    var profileWrap = document.getElementById('profileWrap');
+    var authBtn = document.getElementById('authBtn');
+    if(me){
+      authPanel.style.display = 'none';
+      profileWrap.style.display = 'block';
+      document.getElementById('acctName').textContent = me.name;
+      document.getElementById('acctName2').textContent = me.name;
+      document.getElementById('acctEmail').textContent = me.email;
+      document.getElementById('pf-name').value = me.name;
+      document.getElementById('pf-email').value = me.email;
+      var av = document.getElementById('acctAvatar');
+      if(me.avatar){ av.src = me.avatar; }
+      else { av.removeAttribute('src'); av.style.background='var(--line)'; }
+      var title = document.getElementById('accountTitle');
+      if(title) title.textContent = 'Здравствуйте, ' + me.name;
+      if(authBtn){ authBtn.textContent = 'Мой профиль'; authBtn.href = '#account'; }
+      renderOrders();
+    } else {
+      authPanel.style.display = '';
+      profileWrap.style.display = 'none';
+      var t2 = document.getElementById('accountTitle');
+      if(t2) t2.textContent = 'Аккаунт';
+      if(authBtn){ authBtn.textContent = 'Войти / Регистрация'; authBtn.href = 'register.html'; }
+    }
+    updateChatButton();
+  }
+  document.getElementById('logoutBtn').addEventListener('click', function(){
+    if(storage) storage.removeItem(SESSION_KEY);
+    renderAuthState();
+    toast('Вы вышли из аккаунта');
+  });
+
+  function toast(t){
+    var el = document.getElementById('siteToast');
+    if(!el){ el = document.createElement('div'); el.id='siteToast'; el.className='toast'; document.body.appendChild(el); }
+    el.textContent = t; el.classList.add('show');
+    clearTimeout(el._t); el._t = setTimeout(function(){ el.classList.remove('show'); }, 2200);
+  }
+
+  /* ---- Messenger (client side) ---- */
+  var CHAT_KEY = '3dprint_messages';
+  function loadChats(){ return loadJSON(CHAT_KEY, {}); }
+  function saveChats(ch){ saveJSON(CHAT_KEY, ch); }
+  function currentMsgThread(){ return 'client:' + (currentUser() ? currentUser().name : 'guest'); }
+
+  function openChat(name){
+    var me = currentUser();
+    var win = document.getElementById('chatWindow');
+    document.querySelector('.chat-head b').textContent = 'Чат' + (name ? ' с ' + name : '');
+    win.classList.add('open');
+    renderChat();
+  }
+  function renderChat(){
+    if(!currentUser()) return;
+    var name = currentUser().name;
+    var thread = currentMsgThread();
+    var chats = loadChats();
+    var msgs = chats[thread] || [];
+    var body = document.getElementById('chatBody');
+    body.innerHTML = '';
+    if(!msgs.length){
+      var d = document.createElement('div'); d.className='chat-empty';
+      d.textContent = 'Напишите нам — ответим вскоре.';
+      body.appendChild(d);
+    } else {
+      msgs.forEach(function(m){
+        if(!m.from) return;
+        var div = document.createElement('div');
+        div.className = 'chat-msg ' + (m.from === name ? 'me' : 'them');
+        div.innerHTML = '';
+        var span = document.createElement('span'); span.textContent = m.text;
+        var t = document.createElement('span'); t.className='t'; t.textContent = m.time;
+        div.appendChild(span); div.appendChild(t);
+        body.appendChild(div);
+      });
+    }
+    body.scrollTop = body.scrollHeight;
+    var unread = (chats[thread]||[]).filter(function(m){ return m.from !== name && !m.read; }).length;
+    document.getElementById('chatBadge').textContent = unread ? unread : '';
+  }
+  function sendMsg(){
+    var me = currentUser();
+    if(!me) return;
+    var ta = document.getElementById('chatText');
+    var txt = ta.value.trim();
+    if(!txt) return;
+    var thread = currentMsgThread();
+    var chats = loadChats();
+    if(!chats[thread]) chats[thread] = [];
+    chats[thread].push({ from: me.name, text: txt, time: new Date().toLocaleString('ru-RU'), read: false });
+    saveChats(chats);
+    ta.value = '';
+    renderChat();
+  }
+  document.getElementById('chatSend').addEventListener('click', sendMsg);
+  document.getElementById('chatText').addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); }
+  });
+  function markThreadRead(){
+    var me = currentUser(); if(!me) return;
+    var thread = currentMsgThread();
+    var chats = loadChats();
+    if(chats[thread]){
+      chats[thread].forEach(function(m){ if(m.from !== me.name) m.read = true; });
+      saveChats(chats);
+    }
+    renderChat();
+  }
+  function updateChatButton(){
+    var me = currentUser();
+    var btn = document.getElementById('chatBtn');
+    if(me){
+      btn.style.display = 'inline-block';
+      var thread = currentMsgThread();
+      var chats = loadChats();
+      var unread = (chats[thread]||[]).filter(function(m){ return m.from !== me.name && !m.read; }).length;
+      btn.querySelector('#chatBadge').textContent = unread ? unread : '';
+    } else {
+      btn.style.display = 'none';
+      document.getElementById('chatWindow').classList.remove('open');
+    }
+  }
+  document.getElementById('chatBtn').addEventListener('click', function(){
+    openChat(); document.getElementById('chatWindow').classList.add('open'); markThreadRead();
+  });
+  document.getElementById('chatClose').addEventListener('click', function(){
+    document.getElementById('chatWindow').classList.remove('open'); markThreadRead();
+  });
+
+  /* ---- Cookie banner ---- */
+  var COOKIE_KEY = '3dprint_cookie';
+  if(!storage || !storage.getItem(COOKIE_KEY)){
+    document.getElementById('cookieBanner').classList.remove('hidden');
+  } else {
+    document.getElementById('cookieBanner').classList.add('hidden');
+  }
+  document.getElementById('cookieAccept').addEventListener('click', function(){
+    if(storage) storage.setItem(COOKIE_KEY, 'accepted');
+    document.getElementById('cookieBanner').classList.add('hidden');
+  });
+  document.getElementById('cookieDecline').addEventListener('click', function(){
+    if(storage) storage.setItem(COOKIE_KEY, 'declined');
+    document.getElementById('cookieBanner').classList.add('hidden');
+  });
+
+  /* ---- Agreement banner ---- */
+  var AGREE_KEY = '3dprint_agreement';
+  if(!storage || !storage.getItem(AGREE_KEY)){
+    document.getElementById('agreeBanner').classList.remove('hidden');
+  } else {
+    document.getElementById('agreeBanner').classList.add('hidden');
+  }
+  document.getElementById('agreeAccept').addEventListener('click', function(){
+    if(storage) storage.setItem(AGREE_KEY, 'accepted');
+    document.getElementById('agreeBanner').classList.add('hidden');
+  });
+
+  /* ---- Contact ticket (logged-out) ---- */
+  var CONTACT_KEY = '3dprint_contacts';
+  document.getElementById('contactForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var name = document.getElementById('ct-name').value.trim();
+    var email = document.getElementById('ct-email').value.trim();
+    var txt = document.getElementById('ct-msg').value.trim();
+    var msg = document.getElementById('contactMsg');
+    if(!name || !email){
+      msg.textContent = 'Заполните имя и контакт.'; msg.className = 'form-msg error'; return;
+    }
+    if(!txt){ msg.textContent = 'Напишите сообщение.'; msg.className = 'form-msg error'; return; }
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+    if(useDb){
+      window.DB.contacts.add({ name:name, contact:email, msg:txt, status:'new' }).then(function(){
+        document.getElementById('contactForm').reset();
+        msg.textContent = 'Сообщение отправлено. Мы свяжемся с вами.'; msg.className = 'form-msg';
+        toast('Сообщение отправлено');
+      }).catch(function(){ msg.textContent = 'Ошибка отправки. Попробуйте позже.'; msg.className = 'form-msg error'; });
+      return;
+    }
+    var contacts = loadJSON(CONTACT_KEY, []);
+    contacts.push({ name:name, contact:email, msg:txt, status:'new', date:new Date().toLocaleString('ru-RU'), ts:Date.now() });
+    saveJSON(CONTACT_KEY, contacts);
+    document.getElementById('contactForm').reset();
+    msg.textContent = 'Сообщение отправлено. Мы свяжемся с вами.'; msg.className = 'form-msg';
+    toast('Сообщение отправлено');
+  });
+
+  /* ---------- Stats (views / clicks / orders) ---------- */
+  var stats = loadJSON(STATS_KEY, { views:0, orderClicks:0, orders:0 });
+  function saveStats(){ saveJSON(STATS_KEY, stats); }
+  stats.views = (stats.views||0) + 1;
+  saveStats();
+  // count CTA click on "Заказать"
+  document.querySelectorAll('a[href="order.html"]').forEach(function(a){
+    a.addEventListener('click', function(){ stats.orderClicks = (stats.orderClicks||0)+1; saveStats(); });
+  });
+
+  /* ---------- Apply content edits from the shared DB ---------- */
+  (function(){
+    if(!storage) return;
+    var overrides;
+    try { overrides = JSON.parse(storage.getItem(CONTENT_KEY) || '{}'); }
+    catch(e){ overrides = {}; }
+    document.querySelectorAll('[data-edit]').forEach(function(el){
+      var key = el.getAttribute('data-edit');
+      var val = overrides[key];
+      if(typeof val === 'string' && val !== ''){
+        if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'){
+          el.value = val;
+        } else {
+          el.innerHTML = val;
+        }
+      }
+    });
+  })();
+
+  renderAuthState();
+})();
+</script>
+</body>
+</html>

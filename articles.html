@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Статьи · 3D-KOT</title>
+<meta name="description" content="Статьи о 3D-печати от 3D-KOT.">
+<style>
+  :root{--accent:#16a34a;--accent-strong:#15803d;--radius:16px;}
+  :root,.theme-dark{--bg:#0b100c;--bg-soft:#10160f;--panel:#141c15;--line:#23301f;--ink:#eef5ec;--muted:#9db89a;--btn-text:#04150a;--shadow:0 8px 26px rgba(0,0,0,.4);}
+  .theme-light{--bg:#f6faf4;--bg-soft:#fff;--panel:#fff;--line:#d8e5d3;--ink:#16211a;--muted:#5b6e60;--btn-text:#08301a;--shadow:0 8px 24px rgba(20,40,25,.1);}
+  html.accent-orange{--accent:#ea580c;--accent-strong:#c2410c}
+  html.accent-red{--accent:#dc2626;--accent-strong:#b91c1c}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;min-height:100vh}
+  a{color:var(--accent-strong);text-decoration:none}
+  header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top{max-width:820px;margin:0 auto;padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{font-weight:800;letter-spacing:.03em}
+  .brand b{color:var(--ink)}.brand span{color:var(--accent-strong)}
+  main{max-width:820px;margin:0 auto;padding:40px 22px 60px}
+  h1{font-size:1.7rem;margin-bottom:24px}
+  .art{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:18px;box-shadow:var(--shadow)}
+  .art h2{font-size:1.25rem;margin-bottom:6px}
+  .art .date{font-family:"Consolas",monospace;font-size:.76rem;color:var(--muted);margin-bottom:10px}
+  .art p{color:var(--muted);margin-bottom:8px}
+  .empty{color:var(--muted);text-align:center;padding:40px 0}
+  .btn{display:inline-block;padding:9px 16px;border-radius:10px;font-weight:700;background:var(--accent);color:var(--btn-text);border:none;cursor:pointer;font-family:inherit}
+  .btn:hover{background:var(--accent-strong);color:#fff}
+  .vote{display:inline-flex;gap:8px;margin-top:10px}
+  .vote .btn{background:transparent;border:1px solid var(--line);color:var(--muted)}
+  .vote .btn.active{background:var(--accent);color:var(--btn-text)}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="brand"><b>3D-</b><span>KOT</span></div>
+    <a href="3d-print-site.html">← На главную</a>
+  </div>
+</header>
+<main>
+  <h1>Статьи</h1>
+  <div id="list"></div>
+</main>
+<script src="db.js"></script>
+<script>
+(function(){
+  var ARTICLES_KEY='3dprint_articles';
+  var storage=(function(){try{var t='__t';localStorage.setItem(t,'1');localStorage.removeItem(t);return localStorage;}catch(e){return null;}})();
+  // accent
+  try{var acc=localStorage.getItem('3dprint_accent');if(acc==='orange'||acc==='red')document.documentElement.classList.add('accent-'+acc);}catch(e){}
+  function load(){if(!storage)return[];try{return JSON.parse(storage.getItem(ARTICLES_KEY)||'[]');}catch(e){return[];}}
+  function save(a){if(storage)try{storage.setItem(ARTICLES_KEY,JSON.stringify(a));}catch(e){}}
+  var list=document.getElementById('list');
+  function renderFromDb(){
+    if(!(window.DB&&window.DB.isConfigured&&window.DB.isConfigured())){ renderLocal(); return; }
+    list.innerHTML='<div class="empty">Загрузка…</div>';
+    window.DB.articles.all().then(function(arts){
+      list.innerHTML='';
+      if(!arts||!arts.length){list.innerHTML='<div class="empty">Статей пока нет.</div>';return;}
+      var sorted=arts.slice().sort(function(a,b){return a.id>b.id?1:-1;});
+      sorted.forEach(function(a){
+        var d=document.createElement('div');d.className='art';
+        var h=document.createElement('h2');h.textContent=a.title;
+        var date=document.createElement('div');date.className='date';
+        var when=a.created_at?new Date(a.created_at).toLocaleString('ru-RU'):'';
+        date.textContent=((a.author)?('✍ '+a.author+' · '):'')+when;
+        var body=document.createElement('div');body.innerHTML=a.body;
+        d.appendChild(h);d.appendChild(date);d.appendChild(body);
+        list.appendChild(d);
+      });
+    }).catch(function(){ list.innerHTML='<div class="empty">Ошибка загрузки статей.</div>'; });
+  }
+  function renderLocal(){
+    var arts=load();
+    if(!arts.length){list.innerHTML='<div class="empty">Статей пока нет.</div>';return;}
+    arts.slice().reverse().forEach(function(a){
+      var d=document.createElement('div');d.className='art';
+      var h=document.createElement('h2');h.textContent=a.title;
+      var date=document.createElement('div');date.className='date';date.textContent=(a.author?('✍ '+a.author+' · '):'')+(a.date||'');
+      var body=document.createElement('div');body.innerHTML=a.body;
+      d.appendChild(h);d.appendChild(date);d.appendChild(body);
+      list.appendChild(d);
+    });
+  }
+  function render(){ renderFromDb(); }
+  render();
+})();
+</script>
+</body>
+</html>

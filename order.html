@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Заказать печать · 3D-KOT</title>
+<meta name="description" content="Оформите заказ 3D-печати: имя, почта, телефон, пластик и описание.">
+<style>
+  :root{--accent:#16a34a;--accent-strong:#15803d;--radius:16px;}
+  :root,.theme-dark{--bg:#0b100c;--bg-soft:#10160f;--panel:#141c15;--line:#23301f;--ink:#eef5ec;--muted:#9db89a;--btn-text:#04150a;--shadow:0 8px 26px rgba(0,0,0,.4);--glow:0 0 0 3px rgba(34,197,94,.18);}
+  .theme-light{--bg:#f6faf4;--bg-soft:#fff;--panel:#fff;--line:#d8e5d3;--ink:#16211a;--muted:#5b6e60;--btn-text:#08301a;--shadow:0 8px 24px rgba(20,40,25,.1);--glow:0 0 0 3px rgba(34,197,94,.22);}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;min-height:100vh}
+  a{color:var(--accent-strong);text-decoration:none}
+  header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top{max-width:760px;margin:0 auto;padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{font-weight:800;letter-spacing:.03em}
+  .brand b{color:var(--ink)}.brand span{color:var(--accent-strong)}
+  main{max-width:640px;margin:0 auto;padding:40px 22px}
+  h1{font-size:1.7rem;margin-bottom:8px}
+  .intro{color:var(--muted);margin-bottom:24px}
+  form{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+  label{display:block;font-size:.86rem;font-weight:600;color:var(--muted);margin-bottom:6px}
+  .field{margin-bottom:16px}
+  .field .req{color:var(--accent-strong)}
+  input,select,textarea{width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:var(--bg-soft);color:var(--ink);font-family:inherit;font-size:.96rem}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:var(--glow)}
+  textarea{resize:vertical}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:520px){.row{grid-template-columns:1fr}}
+  .file-box{border:2px dashed var(--line);border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:var(--bg-soft)}
+  .file-box:hover{border-color:var(--accent)}
+  .file-picked{margin-top:8px;font-size:.88rem;color:var(--accent-strong);font-weight:600;word-break:break-all}
+  .btn{display:inline-block;width:100%;padding:13px;border-radius:12px;font-weight:700;background:var(--accent);color:var(--btn-text);border:none;cursor:pointer;font-family:inherit;font-size:1rem}
+  .btn:hover{background:var(--accent-strong);color:#fff}
+  .msg{font-size:.92rem;font-weight:600;color:var(--accent-strong);min-height:1.3em;margin-top:12px}
+  .msg.error{color:#dc2626}
+  .paused-note{background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);color:#dc2626;border-radius:12px;padding:14px 16px;margin-bottom:18px;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="brand"><b>3D-</b><span>KOT</span></div>
+    <a href="3d-print-site.html">← На главную</a>
+  </div>
+</header>
+<main>
+  <h1>Заказать печать</h1>
+  <div class="intro">Заполните форму — мы свяжемся с вами и согласуем детали заказа.</div>
+
+  <div class="paused-note" id="pausedNote" style="display:none">Заказы временно приостановлены. Пожалуйста, попробуйте позже.</div>
+
+  <form id="orderForm" novalidate>
+    <div class="row">
+      <div class="field"><label for="f-name">Имя <span class="req">*</span></label>
+        <input type="text" id="f-name" autocomplete="name"></div>
+      <div class="field"><label for="f-email">Почта <span class="req">*</span></label>
+        <input type="email" id="f-email" autocomplete="email"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label for="f-phone">Телефон (необязательно)</label>
+        <input type="tel" id="f-phone" autocomplete="tel"></div>
+      <div class="field"><label for="f-material">Пластик</label>
+        <select id="f-material"><option value="PLA">PLA</option></select></div>
+    </div>
+    <div class="field"><label for="f-qty">Количество, шт</label>
+      <input type="number" id="f-qty" min="1" value="1"></div>
+    <div class="field"><label for="f-file">Файл 3D-модели (STL / OBJ)</label>
+      <div class="file-box" id="fileBox">📦 Нажмите или перетащите файл сюда (до 5 МБ)</div>
+      <input type="file" id="f-file" accept=".stl,.obj" hidden aria-label="Выберите файл 3D-модели">
+      <p class="file-picked" id="filePicked"></p>
+    </div>
+    <div class="field"><label for="f-desc">Что нужно напечатать? <span class="req">*</span></label>
+      <textarea id="f-desc" rows="4" placeholder="Размеры, количество, требования…"></textarea></div>
+    <button type="submit" class="btn" id="orderSubmit">Отправить заявку</button>
+    <p class="msg" id="formMsg"></p>
+  </form>
+</main>
+<script src="db.js"></script>
+<script>
+(function(){
+  var ORDERS_KEY='3dprint_orders', STATS_KEY='3dprint_stats', PAUSE_KEY='3dprint_pause';
+  var storage=(function(){try{var t='__t';localStorage.setItem(t,'1');localStorage.removeItem(t);return localStorage;}catch(e){return null;}})();
+  function loadJSON(k,d){if(!storage)return d;try{var r=storage.getItem(k);return r?JSON.parse(r):d;}catch(e){return d;}}
+  function saveJSON(k,v){if(storage){try{storage.setItem(k,JSON.stringify(v));}catch(e){}}}
+
+  var paused=!!(storage&&storage.getItem(PAUSE_KEY)==='1');
+  var note=document.getElementById('pausedNote');
+  var submit=document.getElementById('orderSubmit');
+  function applyPause(p){
+    paused=p;
+    if(paused){
+      note.style.display='';
+      submit.style.textDecoration='line-through';
+      submit.style.opacity='.6';
+      submit.disabled=true;
+    } else {
+      note.style.display='none';
+      submit.style.textDecoration='';
+      submit.style.opacity='';
+      submit.disabled=false;
+    }
+  }
+  var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+  if(useDb){
+    window.DB.content.get().then(function(c){ applyPause(!!(c&&c.pause)); }).catch(function(){});
+  } else {
+    applyPause(paused);
+  }
+
+  // count CTA clicks
+  var stats=loadJSON(STATS_KEY,{views:0,orderClicks:0,orders:0});
+  stats.orderClicks=(stats.orderClicks||0)+1;
+  saveJSON(STATS_KEY,stats);
+
+  document.getElementById('fileBox').addEventListener('click',function(){
+    document.getElementById('f-file').click();
+  });
+  document.getElementById('f-file').addEventListener('change',function(){
+    var f=document.getElementById('f-file');
+    if(f.files&&f.files[0]) document.getElementById('filePicked').textContent=f.files[0].name;
+  });
+  var box=document.getElementById('fileBox');
+  box.addEventListener('dragover',function(e){e.preventDefault();});
+  box.addEventListener('drop',function(e){
+    e.preventDefault();
+    if(e.dataTransfer.files&&e.dataTransfer.files[0]){
+      document.getElementById('f-file').files=e.dataTransfer.files;
+      document.getElementById('filePicked').textContent=e.dataTransfer.files[0].name;
+    }
+  });
+
+  document.getElementById('orderForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    if(paused) return;
+    var name=document.getElementById('f-name').value.trim();
+    var email=document.getElementById('f-email').value.trim();
+    var phone=document.getElementById('f-phone').value.trim();
+    var material=document.getElementById('f-material').value;
+    var qty=document.getElementById('f-qty').value||1;
+    var desc=document.getElementById('f-desc').value.trim();
+    var msg=document.getElementById('formMsg');
+    if(!name){msg.textContent='Укажите имя.';msg.className='msg error';return;}
+    if(!email||email.indexOf('@')<1){msg.textContent='Укажите корректную почту.';msg.className='msg error';return;}
+    if(!desc){msg.textContent='Опишите, что нужно напечатать.';msg.className='msg error';return;}
+    var o={name:name,email:email,phone:phone||'',material:material,qty:+qty||1,description:desc,status:'processing',date:new Date().toLocaleString('ru-RU'),ts:Date.now()};
+    var fileEl=document.getElementById('f-file');
+    function sendToDb(){
+      var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+      if(useDb){
+        var rec={user_name:name,name:name,email:email,phone:phone||'',material:material,qty:+qty||1,description:desc,status:'processing'};
+        window.DB.orders.add(rec).then(function(){
+          document.getElementById('orderForm').reset();
+          document.getElementById('filePicked').textContent='';
+          msg.textContent='Заявка отправлена. Мы свяжемся с вами.';msg.className='msg';
+        }).catch(function(){ msg.textContent='Ошибка отправки. Попробуйте позже.';msg.className='msg error'; });
+        return;
+      }
+      var orders=loadJSON(ORDERS_KEY,[]);
+      orders.push(o);
+      saveJSON(ORDERS_KEY,orders);
+      var st=loadJSON(STATS_KEY,{views:0,orderClicks:0,orders:0});
+      st.orders=(st.orders||0)+1;
+      saveJSON(STATS_KEY,st);
+      document.getElementById('orderForm').reset();
+      document.getElementById('filePicked').textContent='';
+      msg.textContent='Заявка отправлена. Мы свяжемся с вами.';msg.className='msg';
+    }
+    if(fileEl.files&&fileEl.files[0]){
+      var f=fileEl.files[0];
+      if(f.size>5*1024*1024){msg.textContent='Файл больше 5 МБ.';msg.className='msg error';return;}
+      var rd=new FileReader();
+      rd.onload=function(){o.fileName=f.name;o.fileData=String(rd.result).slice(0,200000);sendToDb();};
+      rd.readAsDataURL(f);
+    } else { sendToDb(); }
+  });
+})();
+</script>
+</body>
+</html>

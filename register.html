@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход и регистрация · 3D-KOT</title>
+<meta name="description" content="Вход и регистрация в аккаунт 3D-KOT.">
+<style>
+  :root{--accent:#16a34a;--accent-strong:#15803d;}
+  :root,.theme-dark{--bg:#0b100c;--bg-soft:#10160f;--panel:#141c15;--line:#23301f;--ink:#eef5ec;--muted:#9db89a;--btn-text:#04150a;--shadow:0 8px 26px rgba(0,0,0,.4);}
+  .theme-light{--bg:#f6faf4;--bg-soft:#fff;--panel:#fff;--line:#d8e5d3;--ink:#16211a;--muted:#5b6e60;--btn-text:#08301a;--shadow:0 8px 24px rgba(20,40,25,.1);}
+  html.accent-orange{--accent:#ea580c;--accent-strong:#c2410c}
+  html.accent-red{--accent:#dc2626;--accent-strong:#b91c1c}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;min-height:100vh}
+  a{color:var(--accent-strong);text-decoration:none}
+  header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top{max-width:880px;margin:0 auto;padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{font-weight:800;letter-spacing:.03em}
+  .brand b{color:var(--ink)}.brand span{color:var(--accent-strong)}
+  main{max-width:440px;margin:0 auto;padding:44px 22px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px;box-shadow:var(--shadow)}
+  h1{font-size:1.5rem;margin-bottom:4px}
+  .sub{color:var(--muted);font-size:.9rem;margin-bottom:20px}
+  label{display:block;font-size:.86rem;font-weight:600;color:var(--muted);margin-bottom:6px}
+  input{width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:var(--bg-soft);color:var(--ink);font-family:inherit;font-size:.96rem;margin-bottom:14px}
+  input:focus{outline:none;border-color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin-bottom:20px}
+  .tablink{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-family:inherit}
+  .tablink.active{background:var(--accent);border-color:var(--accent);color:var(--btn-text)}
+  .form{display:none}.form.active{display:block}
+  .btn{display:inline-block;width:100%;padding:12px;border-radius:12px;font-weight:700;background:var(--accent);color:var(--btn-text);border:none;cursor:pointer;font-family:inherit}
+  .btn:hover{background:var(--accent-strong);color:#fff}
+  .msg{font-size:.9rem;font-weight:600;color:var(--accent-strong);min-height:1.2em;margin-top:10px}
+  .msg.error{color:#dc2626}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="brand"><b>3D-</b><span>KOT</span></div>
+    <a href="3d-print-site.html">← На главную</a>
+  </div>
+</header>
+<main>
+  <div class="card">
+    <h1 id="authTitle">Вход</h1>
+    <div class="sub">Войдите в аккаунт или создайте новый.</div>
+    <div class="tabs">
+      <button class="tablink active" id="tabLogin" type="button">Вход</button>
+      <button class="tablink" id="tabRegister" type="button">Регистрация</button>
+    </div>
+
+    <form class="form active" id="loginForm" novalidate>
+      <label for="li-name">Имя пользователя</label>
+      <input type="text" id="li-name" autocomplete="username">
+      <label for="li-pass">Пароль</label>
+      <input type="password" id="li-pass" autocomplete="current-password">
+      <button type="submit" class="btn">Войти</button>
+      <p class="msg" id="loginMsg"></p>
+    </form>
+
+    <form class="form" id="registerForm" novalidate>
+      <label for="rg-name">Имя пользователя</label>
+      <input type="text" id="rg-name" autocomplete="username">
+      <label for="rg-email">Почта</label>
+      <input type="email" id="rg-email" autocomplete="email">
+      <label for="rg-pass">Пароль</label>
+      <input type="password" id="rg-pass" autocomplete="new-password">
+      <button type="submit" class="btn">Создать аккаунт</button>
+      <p class="msg" id="registerMsg"></p>
+    </form>
+  </div>
+</main>
+<script src="db.js"></script>
+<script>
+(function(){
+  var ACCENT_KEY='3dprint_accent', root=document.documentElement;
+  var sa=null; try{sa=localStorage.getItem(ACCENT_KEY);}catch(e){}
+  if(sa==='orange'||sa==='red') root.classList.add('accent-'+sa);
+  var USERS_KEY='3dprint_users', SESSION_KEY='3dprint_session';
+  function loadUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||'[]');}catch(e){return [];}}
+  function saveUsers(u){try{localStorage.setItem(USERS_KEY,JSON.stringify(u));}catch(e){}}
+  var storage=(function(){try{var t='__t';localStorage.setItem(t,'1');localStorage.removeItem(t);return localStorage;}catch(e){return null;}})();
+  var USERS=storage?loadUsers():[];
+
+  function go(){ location.href='3d-print-site.html'; }
+
+  // if already logged in
+  if(storage && storage.getItem(SESSION_KEY)){
+    document.getElementById('authTitle').textContent='Вы уже вошли';
+    // hide forms and show link
+  }
+
+  document.getElementById('tabLogin').addEventListener('click',function(){setTab('login');});
+  document.getElementById('tabRegister').addEventListener('click',function(){setTab('register');});
+  function setTab(t){
+    document.getElementById('tabLogin').classList.toggle('active',t==='login');
+    document.getElementById('tabRegister').classList.toggle('active',t==='register');
+    document.getElementById('loginForm').classList.toggle('active',t==='login');
+    document.getElementById('registerForm').classList.toggle('active',t==='register');
+    document.getElementById('authTitle').textContent=t==='login'?'Вход':'Регистрация';
+  }
+
+  document.getElementById('registerForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var name=document.getElementById('rg-name').value.trim();
+    var email=document.getElementById('rg-email').value.trim();
+    var pass=document.getElementById('rg-pass').value;
+    var msg=document.getElementById('registerMsg');
+    if(!name||!email||!pass){msg.textContent='Заполните все поля.';msg.className='msg error';return;}
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+    function finishOk(){
+      if(storage) storage.setItem(SESSION_KEY,name);
+      go();
+    }
+    if(useDb){
+      if(!window.DB.users.register){ msg.textContent='Ошибка инициализации.';msg.className='msg error';return; }
+      window.DB.users.register(name, email, pass).then(function(r){
+        if(r && r.ok){ finishOk(); }
+        else { msg.textContent=(r && r.error)?r.error:'Ошибка регистрации.';msg.className='msg error'; }
+      }).catch(function(){ msg.textContent='Ошибка регистрации. Попробуйте позже.';msg.className='msg error'; });
+      return;
+    }
+    for(var i=0;i<USERS.length;i++){
+      if(USERS[i].name===name){msg.textContent='Имя занято.';msg.className='msg error';return;}
+      if(USERS[i].email.toLowerCase()===email.toLowerCase()){msg.textContent='Почта уже зарегистрирована.';msg.className='msg error';return;}
+    }
+    USERS.push({name:name,email:email,pass:pass});
+    saveUsers(USERS);
+    if(storage) storage.setItem(SESSION_KEY,name);
+    go();
+  });
+
+  document.getElementById('loginForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var name=document.getElementById('li-name').value.trim();
+    var pass=document.getElementById('li-pass').value;
+    var msg=document.getElementById('loginMsg');
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+    function ok(u){
+      if(storage) storage.setItem(SESSION_KEY,u.name||name);
+      go();
+    }
+    if(useDb){
+      window.DB.users.login(name, pass).then(function(r){
+        if(r && r.ok){ ok({ name: r.name }); }
+        else { msg.textContent=(r && r.error)?r.error:'Неверное имя или пароль.';msg.className='msg error'; }
+      }).catch(function(){ msg.textContent='Ошибка входа.';msg.className='msg error'; });
+      return;
+    }
+    for(var i=0;i<USERS.length;i++){
+      if(USERS[i].name===name&&USERS[i].pass===pass){
+        ok(USERS[i]);
+        return;
+      }
+    }
+    msg.textContent='Неверное имя или пароль.';msg.className='msg error';
+  });
+})();
+</script>
+</body>
+</html>
