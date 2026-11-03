@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Настройки аккаунта · 3D-KOT</title>
+<meta name="description" content="Настройки аккаунта 3D-KOT.">
+<style>
+  :root{
+    --radius:14px;
+    --font-ui:Inter,"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+    --font-mono:Consolas,Menlo,monospace;
+    --accent:#2A9D8F; --accent-strong:#23867a; --accent-soft:#bfe8e2;
+    --accent-wash:rgba(42,157,143,.14); --accent-bg:rgba(42,157,143,.16);
+  }
+  :root,.theme-dark{--bg:#0e1514;--bg-soft:#131c1b;--panel:#16211f;--panel-2:#1b2927;--line:#263634;
+    --ink:#e9f5f2;--muted:#9fb8b3;--btn-text:#06201c;--shadow:0 10px 30px rgba(0,0,0,.4);
+    --glow:0 0 0 3px rgba(42,157,143,.2)}
+  .theme-light{--bg:#f6fbfa;--bg-soft:#fff;--panel:#fff;--panel-2:#eef7f5;--line:#d9e9e5;
+    --ink:#14211f;--muted:#5b7670;--btn-text:#05231e;--shadow:0 10px 28px rgba(28,70,62,.10);
+    --glow:0 0 0 3px rgba(42,157,143,.2)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-ui);background:var(--bg);color:var(--ink);line-height:1.6;min-height:100vh;transition:background .3s,color .3s}
+  a{color:var(--accent-strong);text-decoration:none}
+  .wrap{max-width:760px;margin:0 auto;padding:0 22px}
+  header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .brand{font-weight:800;letter-spacing:.03em}
+  .brand b{color:var(--ink)}.brand span{color:var(--accent-strong)}
+  main{padding:44px 0 60px}
+  h1{font-size:1.5rem;margin-bottom:6px}
+  .sub{color:var(--muted);font-size:.9rem;margin-bottom:26px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px;margin-bottom:20px;box-shadow:var(--shadow)}
+  .panel h3{font-size:1.05rem;margin-bottom:16px}
+  .field{margin-bottom:16px}
+  label{display:block;font-size:.86rem;font-weight:600;color:var(--muted);margin-bottom:6px}
+  input{width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:var(--bg-soft);color:var(--ink);font-family:inherit;font-size:.96rem}
+  input:focus{outline:none;border-color:var(--accent);box-shadow:var(--glow)}
+  input[type=file]{padding:9px;cursor:pointer}
+  .btn{display:inline-block;padding:12px 20px;border-radius:12px;font-weight:700;font-size:.95rem;border:1px solid transparent;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--accent);color:var(--btn-text)}
+  .btn-primary:hover{background:var(--accent-strong);color:#fff}
+  .btn-ghost{border-color:var(--line);color:var(--ink);background:transparent}
+  .btn-ghost:hover{border-color:var(--accent-strong);color:var(--accent-strong)}
+  .btn-block{width:100%}
+  .msg{font-size:.9rem;font-weight:600;color:var(--accent-strong);min-height:1.2em;margin-top:10px}
+  .msg.error{color:#E76F51}
+  .avatar-row{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+  .avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);background:var(--line)}
+  .themes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:520px){.themes{grid-template-columns:1fr}}
+  .th-btn{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--bg-soft);border-radius:10px;padding:10px 12px;cursor:pointer;font-family:inherit;color:var(--ink);text-align:left;font-size:.88rem}
+  .th-btn:hover{border-color:var(--accent-strong)}
+  .th-btn.active{border-color:var(--accent);box-shadow:var(--glow)}
+  .th-btn .sw{display:inline-flex;gap:3px}
+  .th-btn .sw i{width:14px;height:14px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap top">
+    <div class="brand"><b>3D-</b><span>KOT</span></div>
+    <a href="3d-print-site.html">← На главную</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h1 id="pgTitle">Настройки аккаунта</h1>
+    <div class="sub" id="pgSub">Управление профилем и темой оформления.</div>
+
+    <div class="panel">
+      <h3>Профиль</h3>
+      <div class="avatar-row">
+        <img src="" alt="Аватар" class="avatar" id="pfAvatar">
+        <div style="color:var(--muted);font-size:.9rem" id="pfWho">Вы не вошли в аккаунт.</div>
+      </div>
+      <form id="profileForm" novalidate>
+        <div class="field"><label for="pf-name">Имя пользователя</label>
+          <input type="text" id="pf-name" required></div>
+        <div class="field"><label for="pf-email">Почта</label>
+          <input type="email" id="pf-email" required></div>
+        <div class="field"><label for="pf-pass">Новый пароль</label>
+          <input type="password" id="pf-pass" autocomplete="new-password"></div>
+        <div class="field"><label for="pf-avatar">Аватар</label>
+          <input type="file" id="pf-avatar" accept="image/*" aria-label="Загрузить аватар">
+          <p style="font-size:.8rem;color:var(--muted);margin-top:4px">Изображение до 1 МБ.</p></div>
+        <button type="submit" class="btn btn-primary btn-block">Сохранить</button>
+        <p class="msg" id="profileMsg" role="status" aria-live="polite"></p>
+      </form>
+      <a href="register.html" class="btn btn-ghost" id="loginLink" style="margin-top:14px;">Войти / Зарегистрироваться</a>
+    </div>
+
+    <div class="panel">
+      <h3>Тема оформления</h3>
+      <div class="themes" id="themeList"></div>
+    </div>
+
+  </div>
+</main>
+
+<script src="db.js"></script>
+<script>
+(function(){
+  /* ---- Theme system (same 5 palettes as main site) ---- */
+  var THEMES=[
+    {id:'t1',name:'Красный',c1:'#D00000',c2:'#000000'},
+    {id:'t2',name:'Синий',c1:'#3D348B',c2:'#F7B801'},
+    {id:'t3',name:'Тиловый',c1:'#2A9D8F',c2:'#F4A261'},
+    {id:'t4',name:'Пурпур',c1:'#1B263B',c2:'#F72585'},
+    {id:'t5',name:'Оливковый',c1:'#264653',c2:'#E9C46A'}
+  ];
+  var root=document.documentElement;
+  function hexA(hex,a){var h=hex.replace('#','');if(h.length===3){h=h.split('').map(function(x){return x+x;}).join('');}var n=parseInt(h,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
+  function applyTheme(id){
+    var t=null;for(var i=0;i<THEMES.length;i++){if(THEMES[i].id===id)t=THEMES[i];}
+    if(t){
+      root.style.setProperty('--accent',t.c1);
+      root.style.setProperty('--accent-strong',t.c1);
+      root.style.setProperty('--accent-soft',t.c2);
+      root.style.setProperty('--accent-wash',hexA(t.c1,0.14));
+      root.style.setProperty('--accent-bg',hexA(t.c1,0.16));
+    }
+    buildThemeList(id);
+  }
+  function buildThemeList(activeId){
+    var wrap=document.getElementById('themeList');wrap.innerHTML='';
+    THEMES.forEach(function(t){
+      var b=document.createElement('button');b.type='button';b.className='th-btn'+(t.id===activeId?' active':'');
+      b.innerHTML='<span class="sw"><i style="background:'+t.c1+'"></i><i style="background:'+t.c2+'"></i></span><span>'+t.name+'</span>';
+      b.addEventListener('click',function(){applyTheme(t.id);try{localStorage.setItem('3dprint_accent',t.id);}catch(e){}});
+      wrap.appendChild(b);
+    });
+  }
+  var st=null;try{st=localStorage.getItem('3dprint_accent');}catch(e){}
+  applyTheme(st||'t3');
+
+  /* ---- Session & profile ---- */
+  var storage=(function(){try{var t='__t';localStorage.setItem(t,'1');localStorage.removeItem(t);return localStorage;}catch(e){return null;}})();
+  var SESSION_KEY='3dprint_session',ME_KEY='3dprint_me',USERS_KEY='3dprint_users';
+  function loadJSON(k,d){if(!storage)return d;try{var r=storage.getItem(k);return r?JSON.parse(r):d;}catch(e){return d;}}
+  function saveJSON(k,v){if(storage){try{storage.setItem(k,JSON.stringify(v));}catch(e){}}}
+  function currentUser(){
+    if(!storage)return null;
+    var name=storage.getItem(SESSION_KEY);if(!name)return null;
+    var me=loadJSON(ME_KEY,null);return me&&me.name===name?me:{name:name};
+  }
+  function render(){
+    var me=currentUser();
+    var form=document.getElementById('profileForm');
+    var link=document.getElementById('loginLink');
+    var who=document.getElementById('pfWho');
+    if(me){
+      form.style.display='block'; link.style.display='none';
+      document.getElementById('pf-name').value=me.name||'';
+      document.getElementById('pf-email').value=me.email||'';
+      who.textContent='Вы вошли как '+me.name;
+      var av=document.getElementById('pfAvatar');
+      if(me.avatar){av.src=me.avatar;}else{av.removeAttribute('src');}
+    }else{
+      form.style.display='none'; link.style.display='inline-block';
+      who.textContent='Вы не вошли в аккаунт.';
+    }
+  }
+  render();
+
+  document.getElementById('profileForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var me=currentUser();if(!me)return;
+    var nM=document.getElementById('pf-name').value.trim();
+    var nM2=document.getElementById('pf-email').value.trim();
+    var nP=document.getElementById('pf-pass').value;
+    var msg=document.getElementById('profileMsg');
+    if(!nM||!nM2){msg.textContent='Имя и почта обязательны.';msg.className='msg error';return;}
+    me.name=nM;me.email=nM2;if(nP)me.pass=nP;
+    var avEl=document.getElementById('pf-avatar');
+    if(avEl&&avEl.files&&avEl.files[0]){
+      var avf=avEl.files[0];
+      if(avf.size>1024*1024){msg.textContent='Аватар больше 1 МБ.';msg.className='msg error';return;}
+      var rd=new FileReader();
+      rd.onload=function(){
+        me.avatar=String(rd.result);
+        saveJSON(ME_KEY,me);
+        if(storage)storage.setItem(SESSION_KEY,me.name);
+        document.getElementById('profileForm').reset();render();
+        msg.textContent='Профиль обновлён.';msg.className='msg';
+      };
+      rd.readAsDataURL(avf);
+      return;
+    }
+    saveJSON(ME_KEY,me);
+    if(storage)storage.setItem(SESSION_KEY,me.name);
+    document.getElementById('profileForm').reset();render();
+    msg.textContent='Профиль обновлён.';msg.className='msg';
+  });
+})();
+</script>
+</body>
+</html>

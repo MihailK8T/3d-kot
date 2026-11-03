@@ -7,60 +7,61 @@
 <meta name="description" content="Всё о 3D-печати: материалы, этапы работы, применения и ответы на частые вопросы.">
 <style>
   :root{
-    --radius:16px;
-    --maxw:1120px;
-    --font-ui:"Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    --radius:14px;
+    --maxw:1040px;
+    --font-ui:"Inter","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
     --font-mono:"Consolas","Menlo",monospace;
-    --accent:#16a34a;
-    --accent-strong:#15803d;
-    --accent-soft:#bbf7d0;
-    --accent-wash:rgba(34,197,94,.12);
+    --accent:#2A9D8F;
+    --accent-strong:#23867a;
+    --accent-soft:#bfe8e2;
+    --accent-wash:rgba(42,157,143,.14);
+    --accent-1:#2fb8a8; --accent-2:#bfe8e2;
   }
   /* Dark theme (default) */
   :root, .theme-dark{
-    --bg:#0b100c;
-    --bg-soft:#10160f;
-    --panel:#141c15;
-    --panel-2:#1a241b;
-    --line:#23301f;
-    --ink:#eef5ec;
-    --muted:#9db89a;
-    --accent-bg:rgba(34,197,94,.14);
-    --btn-text:#04150a;
-    --shadow:0 8px 26px rgba(0,0,0,.45);
-    --glow:0 0 0 3px rgba(34,197,94,.18);
+    --bg:#0e1514;
+    --bg-soft:#131c1b;
+    --panel:#16211f;
+    --panel-2:#1b2927;
+    --line:#263634;
+    --ink:#e9f5f2;
+    --muted:#9fb8b3;
+    --accent-bg:rgba(42,157,143,.16);
+    --btn-text:#06201c;
+    --shadow:0 10px 30px rgba(0,0,0,.4);
+    --glow:0 0 0 3px rgba(42,157,143,.2);
   }
   /* Light theme */
   .theme-light{
-    --bg:#f6faf4;
+    --bg:#f6fbfa;
     --bg-soft:#ffffff;
     --panel:#ffffff;
-    --panel-2:#eef5ec;
-    --line:#d8e5d3;
-    --ink:#16211a;
-    --muted:#5b6e60;
-    --accent-bg:rgba(34,197,94,.12);
-    --btn-text:#08301a;
-    --shadow:0 8px 24px rgba(20,40,25,.10);
-    --glow:0 0 0 3px rgba(34,197,94,.22);
+    --panel-2:#eef7f5;
+    --line:#d9e9e5;
+    --ink:#14211f;
+    --muted:#5b7670;
+    --accent-bg:rgba(42,157,143,.12);
+    --btn-text:#05231e;
+    --shadow:0 10px 28px rgba(28,70,62,.10);
+    --glow:0 0 0 3px rgba(42,157,143,.2);
   }
-  /* Accent colors (overrides the green default) */
+  /* Accent colors (overrides the teal default) */
   html.accent-orange{
-    --accent:#ea580c; --accent-strong:#c2410c; --accent-soft:#fed7aa;
-    --accent-wash:rgba(234,88,12,.14);
-    --accent-bg:rgba(234,88,12,.15);
-    --glow:0 0 0 3px rgba(234,88,12,.2);
-    --accent-1:#f97316; --accent-2:#fdba74;
+    --accent:#F4A261; --accent-strong:#e08a3c; --accent-soft:#f8d7b5;
+    --accent-wash:rgba(244,162,97,.16);
+    --accent-bg:rgba(244,162,97,.16);
+    --glow:0 0 0 3px rgba(244,162,97,.2);
+    --accent-1:#f6b37c; --accent-2:#fbe4cc;
   }
   html.accent-red{
-    --accent:#dc2626; --accent-strong:#b91c1c; --accent-soft:#fecaca;
-    --accent-wash:rgba(220,38,38,.14);
-    --accent-bg:rgba(220,38,38,.15);
-    --glow:0 0 0 3px rgba(220,38,38,.2);
-    --accent-1:#ef4444; --accent-2:#fca5a5;
+    --accent:#E76F51; --accent-strong:#d15f43; --accent-soft:#f7c6b9;
+    --accent-wash:rgba(231,111,81,.16);
+    --accent-bg:rgba(231,111,81,.16);
+    --glow:0 0 0 3px rgba(231,111,81,.2);
+    --accent-1:#ef8f77; --accent-2:#f8cfc2;
   }
-  html.accent-green{ --accent-1:#22c55e; --accent-2:#86efac; }
-  html{ --accent-1:#22c55e; --accent-2:#86efac; }
+  html.accent-green{ --accent-1:#2fb8a8; --accent-2:#bfe8e2; }
+  html{ --accent-1:#2fb8a8; --accent-2:#bfe8e2; }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
@@ -94,27 +95,30 @@
   .nav-burger{display:none;background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:1.1rem;cursor:pointer}
   .nav-links.open{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:var(--bg-soft);border-bottom:1px solid var(--line);padding:14px 22px;gap:12px}
 
-  /* Theme toggle */
-  .theme-toggle{
-    display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);
-    background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 8px;
-    cursor:pointer;font-family:inherit;font-weight:600;font-size:.86rem;transition:.18s ease
+  /* Theme toggle / profile dropdown */
+  .btn-sm{padding:8px 16px;font-size:.88rem}
+  .profile-menu{position:relative}
+  .profile-dd{
+    position:absolute;top:calc(100% + 8px);right:0;min-width:230px;z-index:60;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
+    padding:10px;display:none
   }
-  .theme-toggle:hover{border-color:var(--accent-strong);color:var(--accent-strong)}
-  .theme-toggle .track{position:relative;width:34px;height:18px;border-radius:999px;background:var(--line);flex:none;transition:.2s ease}
-  .theme-toggle .knob{
-    position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
-    background:var(--accent);transition:transform .22s ease
+  .profile-menu.open .profile-dd{display:block}
+  .dd-title{font-size:.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:4px 8px 8px}
+  .dd-themes{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 4px}
+  .dd-theme{
+    display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--bg-soft);
+    border-radius:9px;padding:7px 8px;cursor:pointer;font-family:inherit;font-size:.82rem;color:var(--ink);text-align:left
   }
-  .theme-light .theme-toggle .knob{transform:translateX(16px)}
-  .theme-toggle .lbl{display:inline-block}
-  .accent-picker{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:5px 8px;background:var(--panel)}
-  .accent-dot{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s ease, border-color .15s ease}
-  .accent-dot:hover{transform:scale(1.15)}
-  .accent-dot.active{border-color:var(--ink);transform:scale(1.15)}
-  .dot-green{background:#16a34a}
-  .dot-orange{background:#ea580c}
-  .dot-red{background:#dc2626}
+  .dd-theme:hover{border-color:var(--accent-strong)}
+  .dd-theme.active{border-color:var(--accent);box-shadow:var(--glow)}
+  .dd-theme .sw{display:inline-flex;gap:3px}
+  .dd-theme .sw i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .dd-sep{border:none;border-top:1px solid var(--line);margin:10px 4px 8px}
+  .dd-link{display:block;width:100%;text-align:left;background:none;border:none;color:var(--ink);font-family:inherit;
+    font-size:.9rem;padding:8px 10px;border-radius:8px;cursor:pointer;text-decoration:none}
+  .dd-link:hover{background:var(--accent-bg);color:var(--accent-strong)}
+  .dd-btn{color:var(--muted)}
   @media(max-width:720px){
     .nav-links{display:none}
     .nav-burger{display:block}
@@ -154,48 +158,25 @@
   .btn-ghost:hover{border-color:var(--accent-strong);color:var(--accent-strong)}
   .btn:active{transform:translateY(1px)}
 
-  /* CSS layer illustration (animated) */
-  .slicer{position:relative;height:300px}
-  .bed{
-    position:absolute;left:0;right:0;bottom:10px;height:14px;border-radius:6px;
-    background:linear-gradient(180deg,var(--panel-2),var(--line));
+  /* Hero data card (static, strict) */
+  .hero-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px 22px;
+    box-shadow:var(--shadow);
   }
-  .layers{position:absolute;left:12%;right:12%;bottom:24px}
-  .layers .layer{
-    height:13px;border-radius:5px;margin-bottom:5px;
-    background:linear-gradient(90deg,var(--accent),var(--accent-soft));
-    opacity:.95;width:100%;transform-origin:left;
-    animation:layerIn .6s ease backwards
-  }
-  .layers .layer:nth-child(odd){background:linear-gradient(90deg,var(--accent-1),var(--accent-2))}
-  .layers .layer:nth-child(1){animation-delay:.05s}
-  .layers .layer:nth-child(2){animation-delay:.1s}
-  .layers .layer:nth-child(3){animation-delay:.15s}
-  .layers .layer:nth-child(4){animation-delay:.2s}
-  .layers .layer:nth-child(5){animation-delay:.25s}
-  .layers .layer:nth-child(6){animation-delay:.3s}
-  .layers .layer:nth-child(7){animation-delay:.35s}
-  .layers .layer:nth-child(8){animation-delay:.4s}
-  @keyframes layerIn{from{opacity:0;transform:scaleX(.2)}to{opacity:.95;transform:scaleX(1)}}
-  .nozzle{
-    position:absolute;top:6px;left:50%;transform:translateX(-50%);
-    width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;
-    border-top:44px solid var(--ink);filter:drop-shadow(0 4px 10px rgba(0,0,0,.35));
-    animation:nozzleBob 3.2s ease-in-out infinite
-  }
-  .nozzle::after{
-    content:"";position:absolute;top:-46px;left:-8px;width:16px;height:16px;border-radius:50%;
-    background:var(--accent);box-shadow:0 0 0 5px var(--accent-wash);animation:pulse 1.8s ease infinite
-  }
-  @keyframes nozzleBob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
-  @keyframes pulse{0%,100%{box-shadow:0 0 0 4px var(--accent-wash)}50%{box-shadow:0 0 0 10px transparent}}
-  .tick{font-family:var(--font-mono);font-size:.7rem;color:var(--muted)}
-  .tick-t{position:absolute;top:76px;left:4%}
-  .tick-b{position:absolute;bottom:-6px;right:2%;color:var(--accent-strong)}
+  .hc-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .hc-dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
+  .hc-title{font-family:var(--font-mono);font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .hc-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:.92rem}
+  .hc-row:last-of-type{border-bottom:none}
+  .hc-row span{color:var(--muted)}
+  .hc-row b{font-weight:600;text-align:right}
+  .hc-foot{margin-top:14px;font-size:.82rem;color:var(--accent-strong);font-family:var(--font-mono)}
 
   @media(max-width:860px){
     .hero-grid{grid-template-columns:1fr}
-    .slicer{height:220px}
   }
 
   /* ---------- Sections ---------- */
@@ -300,12 +281,12 @@
     display:inline-block;padding:3px 11px;border-radius:999px;font-size:.8rem;font-weight:700;
     font-family:var(--font-mono)
   }
-  .status-processing{background:rgba(234,179,8,.18);color:#ca8a04}
-  .theme-light .status-processing{color:#a36b00}
-  .status-accepted{background:rgba(34,197,94,.18);color:var(--accent-strong)}
-  .status-delivering{background:rgba(59,130,246,.2);color:#3b82f6}
-  .theme-light .status-delivering{color:#1d4ed8}
-  .status-rejected{background:rgba(220,38,38,.16);color:#dc2626}
+  .status-processing{background:rgba(244,162,97,.18);color:#d98a3f}
+  .theme-light .status-processing{color:#c47a2e}
+  .status-accepted{background:rgba(42,157,143,.18);color:var(--accent-strong)}
+  .status-delivering{background:rgba(52,144,220,.2);color:#348fd0}
+  .theme-light .status-delivering{color:#2670a8}
+  .status-rejected{background:rgba(231,111,81,.16);color:#E76F51}
   .profile-card{margin-bottom:18px;padding:16px;background:var(--bg-soft);border:1px solid var(--line);border-radius:12px}
   .profile-card .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
   .profile-card .row:last-child{border-bottom:none}
@@ -420,16 +401,16 @@
       <a href="register.html">Аккаунт</a>
     </nav>
     <div class="nav-controls">
-      <a href="register.html" class="btn btn-primary" id="authBtn" style="padding:8px 16px;font-size:.88rem">Войти / Регистрация</a>
-      <div class="accent-picker" role="group" aria-label="Цвет акцента">
-        <button type="button" class="accent-dot dot-green" data-accent="green" aria-label="Зелёный"></button>
-        <button type="button" class="accent-dot dot-orange" data-accent="orange" aria-label="Оранжевый"></button>
-        <button type="button" class="accent-dot dot-red" data-accent="red" aria-label="Красный"></button>
+      <div class="profile-menu" id="profileMenu">
+        <button type="button" id="authBtn" class="btn btn-primary btn-sm project-dd-btn" aria-haspopup="true" aria-expanded="false">Мой профиль ▾</button>
+        <div class="profile-dd" id="profileDD">
+          <div class="dd-title">Тема оформления</div>
+          <div class="dd-themes" id="ddThemes"></div>
+          <hr class="dd-sep">
+          <a href="profile.html" class="dd-link" id="ddProfileLink">Настройки аккаунта</a>
+          <button type="button" class="dd-link dd-btn" id="ddLogout">Выйти</button>
+        </div>
       </div>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">
-        <span class="track" aria-hidden="true"><span class="knob"></span></span>
-        <span class="lbl" id="themeLabel">Тёмная</span>
-      </button>
       <button class="nav-burger" id="burger" aria-label="Открыть меню" aria-expanded="false">☰</button>
     </div>
   </div>
@@ -446,14 +427,16 @@
         <a class="btn btn-ghost" href="#workflow">Как устроен процесс</a>
       </div>
     </div>
-    <div class="slicer" aria-hidden="true">
-      <div class="nozzle"></div>
-      <div class="layers">
-        <div class="layer"></div><div class="layer"></div><div class="layer"></div><div class="layer"></div><div class="layer"></div><div class="layer"></div><div class="layer"></div><div class="layer"></div>
+    <div class="hero-card" aria-hidden="true">
+      <div class="hc-head">
+        <span class="hc-dot"></span>
+        <span class="hc-title">3D-печать · параметры</span>
       </div>
-      <div class="bed"></div>
-      <span class="tick tick-t">x0.2mm / layer</span>
-      <span class="tick tick-b">extruder: 215°C</span>
+      <div class="hc-row"><span>Материал</span><b>PLA · PETG · TPU</b></div>
+      <div class="hc-row"><span>Точность</span><b>0,1–0,2 мм</b></div>
+      <div class="hc-row"><span>Макс. размер</span><b>300×300×400 мм</b></div>
+      <div class="hc-row"><span>Сервис</span><b>Печать под заказ</b></div>
+      <div class="hc-foot">От модели до партии деталей</div>
     </div>
   </div>
 </section>
@@ -627,7 +610,6 @@
       <div class="profile-wrap" id="profileWrap" style="display:none">
         <div class="auth-panel">
           <div class="tabs" style="display:flex;gap:8px;margin-bottom:20px">
-            <button class="authtab" id="tabSettings" data-ptab="settings" aria-selected="false">Настройки</button>
             <button class="authtab active" id="tabOrders" data-ptab="orders" aria-selected="true">Мои заявки</button>
           </div>
 
@@ -647,24 +629,7 @@
             <ul class="acct-list" id="myOrders"></ul>
             <p class="status-badge" aria-hidden="true" style="position:absolute;opacity:0">.</p>
           </div>
-
-          <div id="ptab-settings" style="display:none">
-            <h3 style="font-size:1rem;margin-bottom:14px">Редактирование профиля</h3>
-            <form id="profileForm" novalidate>
-              <div class="field"><label for="pf-name">Имя пользователя</label>
-                <input type="text" id="pf-name" required></div>
-              <div class="field"><label for="pf-email">Почта</label>
-                <input type="email" id="pf-email" required></div>
-              <div class="field"><label for="pf-pass">Новый пароль</label>
-                <input type="password" id="pf-pass" autocomplete="new-password"></div>
-              <div class="field"><label for="pf-avatar">Аватар</label>
-                <input type="file" id="pf-avatar" accept="image/*" aria-label="Загрузить аватар">
-                <p style="font-size:.8rem;color:var(--muted);margin-top:4px">Можно загрузить изображение до 1 МБ.</p></div>
-              <button type="submit" class="btn btn-primary">Сохранить</button>
-              <p class="form-msg" id="profileMsg" role="status" aria-live="polite"></p>
-            </form>
-            <button type="button" class="btn btn-ghost" id="logoutBtn" style="margin-top:12px">Выйти</button>
-          </div>
+          <div id="ptab-settings" style="display:none"></div>
         </div>
       </div>
 
@@ -720,47 +685,56 @@
 <script src="db.js"></script>
 <script>
 (function(){
-  /* ---------- Theme ---------- */
-  var THEME_KEY = '3dprint_theme';
+  /* ---------- Theme palettes (5 two-color themes) ---------- */
+  var THEME_KEY = '3dprint_accent';
   var root = document.documentElement;
-  var toggle = document.getElementById('themeToggle');
-  var label = document.getElementById('themeLabel');
-  function applyTheme(name){
-    root.classList.remove('theme-dark','theme-light');
-    root.classList.add('theme-' + name);
-    if(label) label.textContent = name === 'dark' ? 'Тёмная' : 'Светлая';
+  var THEMES = [
+    {id:'t1', name:'Красный', c1:'#D00000', c2:'#000000'},
+    {id:'t2', name:'Синий',   c1:'#3D348B', c2:'#F7B801'},
+    {id:'t3', name:'Тиловый', c1:'#2A9D8F', c2:'#F4A261'},
+    {id:'t4', name:'Пурпур',  c1:'#1B263B', c2:'#F72585'},
+    {id:'t5', name:'Оливковый', c1:'#264653', c2:'#E9C46A'}
+  ];
+  function applyTheme(id){
+    root.removeAttribute('data-theme');
+    var t=null;
+    for(var i=0;i<THEMES.length;i++){ if(THEMES[i].id===id) t=THEMES[i]; }
+    if(t){
+      root.setAttribute('data-theme', id);
+      root.style.setProperty('--accent', t.c1);
+      root.style.setProperty('--accent-strong', t.c1);
+      root.style.setProperty('--accent-soft', t.c2);
+      root.style.setProperty('--accent-wash', hexA(t.c1,0.14));
+      root.style.setProperty('--accent-bg', hexA(t.c1,0.16));
+      root.style.setProperty('--accent-1', t.c1);
+      root.style.setProperty('--accent-2', t.c2);
+    }
+    buildThemeList(id);
   }
-  var saved = null;
-  try { saved = localStorage.getItem(THEME_KEY); } catch(e){}
-  var prefsDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  applyTheme(saved || (prefsDark ? 'dark' : 'light'));
-  if(toggle) toggle.addEventListener('click', function(){
-    var cur = root.classList.contains('theme-light') ? 'light' : 'dark';
-    var next = cur === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-    try { localStorage.setItem(THEME_KEY, next); } catch(e){}
-  });
-
-  /* ---------- Accent color ---------- */
-  var ACCENT_KEY = '3dprint_accent';
-  var rootEl = document.documentElement;
-  function applyAccent(a){
-    rootEl.classList.remove('accent-green','accent-orange','accent-red');
-    rootEl.classList.add('accent-' + (a || 'green'));
-    document.querySelectorAll('.accent-dot').forEach(function(d){
-      d.classList.toggle('active', d.dataset.accent === (a||'green'));
+  function hexA(hex,a){
+    var h=hex.replace('#',''); if(h.length===3){ h=h.split('').map(function(x){return x+x;}).join(''); }
+    var n=parseInt(h,16); var r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+    return 'rgba('+r+','+g+','+b+','+a+')';
+  }
+  function buildThemeList(activeId){
+    var wrap=document.getElementById('ddThemes'); if(!wrap) return;
+    wrap.innerHTML='';
+    THEMES.forEach(function(t){
+      var b=document.createElement('button');
+      b.type='button'; b.className='dd-theme'+(t.id===activeId?' active':'');
+      b.setAttribute('data-theme', t.id);
+      b.innerHTML='<span class="sw"><i style="background:'+t.c1+'"></i><i style="background:'+t.c2+'"></i></span><span>'+t.name+'</span>';
+      b.addEventListener('click', function(){
+        applyTheme(t.id);
+        try{ localStorage.setItem(THEME_KEY, t.id); }catch(e){}
+        toast('Тема: '+t.name);
+      });
+      wrap.appendChild(b);
     });
   }
-  var savedAccent = null;
-  try { savedAccent = localStorage.getItem(ACCENT_KEY); } catch(e){}
-  applyAccent(savedAccent || 'green');
-  document.querySelectorAll('.accent-dot').forEach(function(d){
-    d.addEventListener('click', function(){
-      var acc = d.dataset.accent;
-      applyAccent(acc);
-      try { localStorage.setItem(ACCENT_KEY, acc); } catch(e){}
-    });
-  });
+  var savedTheme=null;
+  try{ savedTheme=localStorage.getItem(THEME_KEY); }catch(e){}
+  applyTheme(savedTheme || 't3');
 
   var burger = document.getElementById('burger');
   var nav = document.getElementById('navLinks');
@@ -770,6 +744,29 @@
   });
   var links = nav.querySelectorAll('a');
   links.forEach(function(l){ l.addEventListener('click', function(){ nav.classList.remove('open'); burger.setAttribute('aria-expanded','false'); }); });
+
+  /* ---------- Profile dropdown ---------- */
+  var profileMenu=document.getElementById('profileMenu');
+  var profileDD=document.getElementById('profileDD');
+  var authBtn=document.getElementById('authBtn');
+  function closeDD(){ if(profileMenu) profileMenu.classList.remove('open'); if(authBtn) authBtn.setAttribute('aria-expanded','false'); }
+  if(authBtn) authBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    if(!currentUser()){ location.href='register.html'; return; }
+    var open=profileMenu.classList.toggle('open');
+    authBtn.setAttribute('aria-expanded', open?'true':'false');
+  });
+  document.addEventListener('click', function(e){ if(!profileMenu || !profileMenu.contains(e.target)) closeDD(); });
+  document.getElementById('ddLogout').addEventListener('click', function(){
+    if(storage){ storage.removeItem(SESSION_KEY); storage.removeItem(ME_KEY); }
+    closeDD(); renderAuthState(); toast('Вы вышли из аккаунта');
+  });
+  function updateAuthBtn(){
+    var me=currentUser();
+    var btn=document.getElementById('authBtn');
+    if(me){ btn.textContent='Мой профиль ▾'; }
+    else { btn.textContent='Войти / Регистрация'; }
+  }
 
   var faqItems = document.querySelectorAll('.faq-item');
   faqItems.forEach(function(item){
@@ -803,6 +800,7 @@
   var USERS_KEY = '3dprint_users';
   var ORDERS_KEY = '3dprint_orders';
   var SESSION_KEY = '3dprint_session';
+  var ME_KEY = '3dprint_me';
   var CONTENT_KEY = '3dprint_content';
   var STATS_KEY = '3dprint_stats';
   var PAUSE_KEY = '3dprint_pause';
@@ -831,56 +829,17 @@
     if(!storage) return null;
     var name = storage.getItem(SESSION_KEY);
     if(!name) return null;
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+    if(useDb){
+      // profile saved locally at login/register
+      var me = loadJSON(ME_KEY, null);
+      return me && me.name === name ? me : { name: name };
+    }
     for(var i=0;i<users.length;i++){ if(users[i].name === name) return users[i]; }
     return null;
   }
 
-  /* ---- Profile (settings) ---- */
-  document.getElementById('profileForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    var me = currentUser();
-    if(!me) return;
-    var nM = document.getElementById('pf-name').value.trim();
-    var nM2 = document.getElementById('pf-email').value.trim();
-    var nP = document.getElementById('pf-pass').value;
-    var msg = document.getElementById('profileMsg');
-    if(!nM || !nM2){ msg.textContent='Имя и почта обязательны.'; msg.className='form-msg error'; return; }
-    for(var i=0;i<users.length;i++){
-      if(users[i] !== me && users[i].name === nM){ msg.textContent='Имя занято.'; msg.className='form-msg error'; return; }
-      if(users[i] !== me && users[i].email.toLowerCase() === nM2.toLowerCase()){ msg.textContent='Почта уже используется.'; msg.className='form-msg error'; return; }
-    }
-    me.name = nM; me.email = nM2;
-    if(nP) me.pass = nP;
-    var avEl = document.getElementById('pf-avatar');
-    if(avEl && avEl.files && avEl.files[0]){
-      var avf = avEl.files[0];
-      if(avf.size > 1024*1024){
-        msg.textContent = 'Аватар больше 1 МБ.'; msg.className = 'form-msg error'; return;
-      }
-      var avr = new FileReader();
-      avr.onload = function(){ me.avatar = String(avr.result); saveUsers(); if(storage) storage.setItem(SESSION_KEY, me.name); document.getElementById('profileForm').reset(); msg.textContent = 'Профиль обновлён.'; msg.className = 'form-msg'; toast('Профиль обновлён'); renderAuthState(); };
-      avr.readAsDataURL(avf);
-      return;
-    }
-    saveUsers();
-    if(storage) storage.setItem(SESSION_KEY, me.name);
-    document.getElementById('profileForm').reset();
-    msg.textContent = 'Профиль обновлён.'; msg.className = 'form-msg';
-    toast('Профиль обновлён');
-    renderAuthState();
-  });
-
-  /* ---- Profile / orders tab switch ---- */
-  document.getElementById('tabSettings').addEventListener('click', function(){ switchProfileTab('settings'); });
-  document.getElementById('tabOrders').addEventListener('click', function(){ switchProfileTab('orders'); });
-  function switchProfileTab(t){
-    document.getElementById('tabSettings').classList.toggle('active', t==='settings');
-    document.getElementById('tabOrders').classList.toggle('active', t==='orders');
-    document.getElementById('tabSettings').setAttribute('aria-selected', t==='settings');
-    document.getElementById('tabOrders').setAttribute('aria-selected', t==='orders');
-    document.getElementById('ptab-settings').style.display = t==='settings' ? 'block' : 'none';
-    document.getElementById('ptab-orders').style.display = t==='orders' ? 'block' : 'none';
-  }
+  /* ---- Profile (settings) now lives on profile.html ---- */
 
   /* ---- Render auth state (logged in/out) ---- */
   function statusClass(s){ return 'status-' + (s || 'processing'); }
@@ -892,9 +851,8 @@
     var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
     if(useDb){
       list.innerHTML = '<li class="acct-empty">Загрузка…</li>';
-      window.DB.orders.all().then(function(all){
-        var mine = all.filter(function(o){ return o.user_name === me.name; }).slice().reverse();
-        drawMyOrders(list, mine);
+      window.DB.orders.byUser(me.name).then(function(mine){
+        drawMyOrders(list, (mine||[]).slice().reverse());
       }).catch(function(){ list.innerHTML='<li class="acct-empty">Ошибка загрузки заявок.</li>'; });
       return;
     }
@@ -945,29 +903,26 @@
       document.getElementById('acctName').textContent = me.name;
       document.getElementById('acctName2').textContent = me.name;
       document.getElementById('acctEmail').textContent = me.email;
-      document.getElementById('pf-name').value = me.name;
-      document.getElementById('pf-email').value = me.email;
       var av = document.getElementById('acctAvatar');
       if(me.avatar){ av.src = me.avatar; }
       else { av.removeAttribute('src'); av.style.background='var(--line)'; }
       var title = document.getElementById('accountTitle');
       if(title) title.textContent = 'Здравствуйте, ' + me.name;
-      if(authBtn){ authBtn.textContent = 'Мой профиль'; authBtn.href = '#account'; }
+      document.getElementById('ddLogout').style.display = 'block';
+      var pl=document.getElementById('ddProfileLink'); if(pl) pl.textContent='Настройки аккаунта';
+      document.getElementById('authBtn').textContent='Мой профиль ▾';
       renderOrders();
     } else {
       authPanel.style.display = '';
       profileWrap.style.display = 'none';
       var t2 = document.getElementById('accountTitle');
       if(t2) t2.textContent = 'Аккаунт';
-      if(authBtn){ authBtn.textContent = 'Войти / Регистрация'; authBtn.href = 'register.html'; }
+      document.getElementById('ddLogout').style.display = 'none';
+      var pl2=document.getElementById('ddProfileLink'); if(pl2) pl2.textContent='Войти / Регистрация';
+      document.getElementById('authBtn').textContent='Войти / Регистрация';
     }
     updateChatButton();
   }
-  document.getElementById('logoutBtn').addEventListener('click', function(){
-    if(storage) storage.removeItem(SESSION_KEY);
-    renderAuthState();
-    toast('Вы вышли из аккаунта');
-  });
 
   function toast(t){
     var el = document.getElementById('siteToast');
@@ -1134,11 +1089,8 @@
   });
 
   /* ---------- Apply content edits from the shared DB ---------- */
-  (function(){
-    if(!storage) return;
-    var overrides;
-    try { overrides = JSON.parse(storage.getItem(CONTENT_KEY) || '{}'); }
-    catch(e){ overrides = {}; }
+  function applyOverrides(overrides){
+    overrides = overrides || {};
     document.querySelectorAll('[data-edit]').forEach(function(el){
       var key = el.getAttribute('data-edit');
       var val = overrides[key];
@@ -1150,6 +1102,18 @@
         }
       }
     });
+  }
+  (function(){
+    if(!storage) return;
+    var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
+    if(useDb){
+      window.DB.content.get().then(function(c){ applyOverrides(c && c.content); }).catch(function(){});
+    } else {
+      var overrides;
+      try { overrides = JSON.parse(storage.getItem(CONTENT_KEY) || '{}'); }
+      catch(e){ overrides = {}; }
+      applyOverrides(overrides);
+    }
   })();
 
   renderAuthState();

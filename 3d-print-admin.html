@@ -118,6 +118,18 @@
 
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:var(--panel);border:1px solid var(--accent);color:var(--ink);padding:12px 20px;border-radius:10px;font-size:.9rem;transition:.25s ease;z-index:100}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* Rich article editor */
+  .mce-toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid var(--line);border-bottom:none;border-radius:12px 12px 0 0;background:var(--panel-2);align-items:center}
+  .mce-toolbar .mce-grp{display:inline-flex;gap:4px;align-items:center;flex-wrap:wrap}
+  .mce-toolbar .mce-grp + .mce-grp:before{content:"";width:1px;height:20px;background:var(--line);margin:0 4px}
+  .mce-toolbar button{background:var(--bg-soft);border:1px solid var(--line);color:var(--ink);border-radius:8px;min-width:30px;height:30px;padding:0 8px;cursor:pointer;font-family:inherit;font-size:.9rem}
+  .mce-toolbar button:hover{border-color:var(--accent-strong);color:var(--accent-strong)}
+  .mce-toolbar select{height:30px;border:1px solid var(--line);background:var(--bg-soft);color:var(--ink);border-radius:8px;font-family:inherit;font-size:.85rem;padding:0 4px}
+  .mce-editor{min-height:220px;border:1px solid var(--line);border-radius:0 0 12px 12px;background:var(--bg-soft);color:var(--ink);padding:14px;font-size:.98rem;line-height:1.6;outline:none;overflow-y:auto}
+  .mce-editor:focus{border-color:var(--accent);box-shadow:var(--glow)}
+  .mce-editor h2{font-size:1.2rem;margin:.4em 0}
+  .mce-editor img{max-width:100%;border-radius:10px;margin:8px 0}
   @media(max-width:560px){.top .mono{display:none}}
 </style>
 </head>
@@ -269,8 +281,46 @@
         <h3>Опубликовать статью</h3>
         <div class="sub">Статьи публикуются владельцем и появляются на странице «Статьи».</div>
         <form id="articleForm" novalidate>
-          <div class="field"><label for="ar-title">Заголовок</label><input type="text" id="ar-title"></div>
-          <div class="field"><label for="ar-body">Текст</label><textarea id="ar-body" rows="6" style="width:100%"></textarea></div>
+          <div class="field"><label for="ar-title">Заголовок</label><input type="text" id="ar-title" class="mce-title"></div>
+          <div class="field">
+            <label>Текст статьи</label>
+            <div id="tb" class="mce-toolbar" role="toolbar" aria-label="Панель форматирования">
+              <span class="mce-grp">
+                <button type="button" data-cmd="bold" title="Жирный"><b>B</b></button>
+                <button type="button" data-cmd="italic" title="Курсив"><i>I</i></button>
+                <button type="button" data-cmd="underline" title="Подчёркнутый"><u>U</u></button>
+                <button type="button" data-cmd="strikeThrough" title="Зачёркнутый"><s>S</s></button>
+              </span>
+              <span class="mce-grp">
+                <button type="button" data-cmd="formatBlock" data-val="H2" title="Заголовок">H</button>
+                <button type="button" data-cmd="insertUnorderedList" title="Маркированный список">• Список</button>
+                <button type="button" data-cmd="insertOrderedList" title="Нумерованный список">1. Список</button>
+                <button type="button" data-cmd="createLink" title="Ссылка">🔗</button>
+              </span>
+              <span class="mce-grp">
+                <select id="tb-font" title="Шрифт" aria-label="Шрифт">
+                  <option value="">Шрифт…</option>
+                  <option value="Arial, sans-serif">Arial</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Courier New', monospace">Courier</option>
+                  <option value="Tahoma, sans-serif">Tahoma</option>
+                </select>
+                <select id="tb-size" title="Размер" aria-label="Размер">
+                  <option value="">Размер…</option>
+                  <option value="2">Мелкий</option>
+                  <option value="3">Обычный</option>
+                  <option value="5">Большой</option>
+                  <option value="6">Очень большой</option>
+                </select>
+              </span>
+              <span class="mce-grp">
+                <input type="file" id="tb-img" accept="image/*" hidden aria-label="Вставить изображение">
+                <button type="button" id="tb-img-btn" title="Вставить изображение">🖼 Фото</button>
+              </span>
+            </div>
+            <div id="ar-body-content" class="mce-editor" contenteditable="true" aria-label="Текст статьи"></div>
+            <textarea id="ar-body" rows="6" style="display:none" aria-hidden="true"></textarea>
+          </div>
           <button type="submit" class="btn btn-primary">Опубликовать</button>
           <div class="msg" id="articleMsg"></div>
         </form>
@@ -396,17 +446,56 @@ applyTheme(saved||(pd?'dark':'light'));
       list.appendChild(li);
     });
   }
+  /* ---- Rich article editor toolbar ---- */
+  var editorEl=document.getElementById('ar-body-content');
+  var hiddenTa=document.getElementById('ar-body');
+  function syncEditorHeight(){ if(editorEl){ editorEl.style.minHeight='220px'; } }
+  function applyCmd(cmd,val){
+    if(!editorEl) return;
+    editorEl.focus();
+    try{
+      if(cmd==='createLink'){
+        var url=window.prompt('Введите ссылку (https://…):','https://');
+        if(!url) return;
+        document.execCommand(cmd,false,url);
+      } else {
+        document.execCommand(cmd,false,val||null);
+      }
+    }catch(e){}
+  }
+  document.getElementById('tb').querySelectorAll('button[data-cmd]').forEach(function(b){
+    b.addEventListener('click',function(){ applyCmd(b.dataset.cmd, b.dataset.val); editorEl.focus(); });
+  });
+  document.getElementById('tb-font').addEventListener('change',function(){
+    if(this.value){ applyCmd('fontName', this.value); }
+  });
+  document.getElementById('tb-size').addEventListener('change',function(){
+    if(this.value){ applyCmd('fontSize', this.value); }
+  });
+  document.getElementById('tb-img-btn').addEventListener('click',function(){ document.getElementById('tb-img').click(); });
+  document.getElementById('tb-img').addEventListener('change',function(){
+    var f=this.files && this.files[0]; if(!f) return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      editorEl.focus();
+      document.execCommand('insertHTML', false, '<img src="'+rd.result+'" alt="photo">');
+    };
+    rd.readAsDataURL(f);
+    this.value='';
+  });
+
+  function currentEditorHTML(){ return editorEl ? editorEl.innerHTML : ''; }
   document.getElementById('articleForm').addEventListener('submit',function(e){
     e.preventDefault();
     var me=currentSession(); if(!me||me.role!=='owner') return;
     var title=document.getElementById('ar-title').value.trim();
-    var body=document.getElementById('ar-body').value.trim();
+    var body=currentEditorHTML().trim();
     var msg=document.getElementById('articleMsg');
     if(!title||!body){ msg.textContent='Заполните заголовок и текст.'; msg.className='msg error'; return; }
     var useDb = window.DB && window.DB.isConfigured && window.DB.isConfigured();
     if(useDb){
       window.DB.articles.add({title:title,body:body,author:me.name}).then(function(){
-        document.getElementById('articleForm').reset();
+        document.getElementById('ar-title').value=''; editorEl.innerHTML='';
         msg.textContent='Статья опубликована.'; msg.className='msg';
         renderArticles(); toast('Статья опубликована');
       }).catch(function(){ msg.textContent='Ошибка публикации.'; msg.className='msg error'; });
@@ -415,7 +504,7 @@ applyTheme(saved||(pd?'dark':'light'));
     var arts=loadArticles();
     arts.push({title:title,body:body,author:me.name,date:new Date().toLocaleString('ru-RU'),ts:Date.now()});
     saveArticles(arts);
-    document.getElementById('articleForm').reset();
+    document.getElementById('ar-title').value=''; editorEl.innerHTML='';
     msg.textContent='Статья опубликована.'; msg.className='msg';
     renderArticles(); toast('Статья опубликована');
   });
